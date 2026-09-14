@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="index, follow" />
+    <title>隐私政策 · 骑行评分监测看板</title>
+    <style>
+      :root { color-scheme: light; }
+      body {
+        max-width: 780px;
+        margin: 0 auto;
+        padding: 40px 20px 80px;
+        font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', 'Segoe UI', sans-serif;
+        font-size: 16px;
+        line-height: 1.8;
+        color: #1f2937;
+        background: #ffffff;
+      }
+      h1 { font-size: 26px; line-height: 1.4; margin: 0 0 8px; }
+      h2 { font-size: 19px; margin: 36px 0 10px; padding-top: 8px; border-top: 1px solid #eef2f7; }
+      h2:first-of-type { border-top: 0; }
+      p { margin: 10px 0; }
+      ul { margin: 10px 0; padding-left: 22px; }
+      li { margin: 6px 0; }
+      .meta { color: #6b7280; font-size: 14px; margin: 0 0 4px; }
+      .lead { color: #374151; }
+      strong { color: #111827; }
+      a { color: #0b74d1; }
+      footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid #eef2f7; color: #6b7280; font-size: 14px; }
+    </style>
+  </head>
+  <body>
+    <h1>骑行评分监测看板 隐私政策</h1>
+    <p class="meta">生效日期:2026 年 9 月 14 日</p>
+    <p class="meta">最近更新:2026 年 9 月 14 日</p>
+
+    <h2>1. 引言</h2>
+    <p class="lead">
+      本应用(骑行评分监测看板)由个人开发者 <strong>DSBYSJ</strong>(GitHub:<a href="https://github.com/dsbysj-1">dsbysj-1</a>)开发,仅供个人学习与个人健康数据管理使用。我们深知个人信息对您的重要性,并承诺严格保护您的隐私。
+    </p>
+    <p>
+      本应用是一个在您本地浏览器中运行的个人骑行记录与评分工具:除获取公开天气数据与地图瓦片外,它不依赖任何自有服务器,您的运动健康数据不会被上传。
+    </p>
+
+    <h2>2. 我们收集哪些信息</h2>
+    <p>
+      在您明确授权的情况下,本应用会通过华为 Health Kit 读取您的<strong>运动健康数据</strong>(包括骑行距离、时长、心率、海拔爬升、轨迹等),以及通过公开天气 API 获取的环境数据(气温、降雨、空气质量)。
+    </p>
+    <p>此外,您在应用内主动填写的信息(如骑行日期、路线名称、起点位置、备注)也会被保存,用于生成记录与评分。</p>
+    <p>本应用<strong>不要求注册账号</strong>,不收集您的姓名、手机号、通讯录、相册、短信等与功能无关的个人信息。</p>
+
+    <h2>3. 我们如何使用这些信息</h2>
+    <ul>
+      <li>用于自动填充您的骑行记录表单。</li>
+      <li>用于在本地浏览器中计算您的骑行综合评分,并生成可视化图表。</li>
+      <li><strong>数据仅存储在您本地浏览器(IndexedDB)中,我们绝不会将您的健康数据上传至任何第三方服务器。</strong></li>
+    </ul>
+
+    <h2>4. 数据共享与披露</h2>
+    <p>
+      我们<strong>不会</strong>将您的任何个人数据(尤其是健康数据)分享、出售或转让给任何第三方。本应用不包含任何广告 SDK,不进行商业化数据变现。
+    </p>
+
+    <h2>5. 第三方服务说明</h2>
+    <p>为实现天气、空气质量与地图展示功能,应用会由您的浏览器直接向以下第三方服务发起请求。这些请求<strong>仅包含查询所需的坐标或城市编码,不包含您的华为健康数据</strong>:</p>
+    <ul>
+      <li><strong>高德地图(AMap)</strong>:用于地图渲染与骑行路线规划。请求包含用于地图定位的经纬度坐标。</li>
+      <li><strong>Open-Meteo</strong>:用于获取气温、风速、湿度、降水量、降雨概率、空气质量(AQI/PM2.5)与海拔数据。请求包含用于查询的经纬度坐标。</li>
+    </ul>
+    <p>上述服务由其各自运营方提供,其数据处理方式适用各自的隐私政策。</p>
+
+    <h2>6. 数据存储与保留</h2>
+    <ul>
+      <li>所有骑行记录与健康数据仅保存在您设备的浏览器本地存储(IndexedDB;若不可用则降级为 localStorage)中。</li>
+      <li>开发者无法访问、读取或恢复您的本地数据,也不保留任何副本。</li>
+      <li>您可以在应用内随时删除单条记录,或通过清除浏览器站点数据、卸载应用来彻底删除全部数据。</li>
+    </ul>
+
+    <h2>7. 您的权利</h2>
+    <p>
+      您可以随时在华为运动健康 App 中撤销本应用的授权。撤销后,本应用将无法继续读取您的新数据,但您本地已保存的历史记录不会受影响。
+    </p>
+    <p>您也可以在应用内查看、编辑、删除任意记录,或将其导出为 JSON / CSV 文件后自行保存。</p>
+
+    <h2>8. 数据安全</h2>
+    <p>
+      由于数据始终保存在您的本地设备上,本应用不涉及服务器端数据存储,因此不存在因服务器泄露导致您健康数据外泄的风险。请注意保护好您自己的设备与浏览器数据。
+    </p>
+
+    <h2>9. 未成年人保护</h2>
+    <p>本应用面向成年人设计,不面向 14 周岁以下的儿童,也不会主动收集儿童的个人信息。</p>
+
+    <h2>10. 政策更新</h2>
+    <p>我们可能会不时更新本隐私政策。更新后的版本将在本页面公布,并同步更新页面顶部的「最近更新」日期。若涉及重大变更,我们会在应用内以显著方式提示您。</p>
+
+    <h2>11. 联系我们</h2>
+    <p>
+      如果您对本隐私政策有任何疑问、意见或投诉,请联系:<a href="mailto:2026168688@qq.com">2026168688@qq.com</a>
+    </p>
+
+    <footer>
+      <p>本页面同时作为「骑行评分监测看板」在华为 Health Kit 授权申请中提交的隐私政策地址。</p>
+      <p><a href="./terms.html">查看用户协议</a> · <a href="./">返回项目主页</a></p>
+    </footer>
+  </body>
+</html>

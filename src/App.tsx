@@ -172,8 +172,17 @@ export default function App() {
           />
         </section>
 
-        <footer className="pb-6 text-center text-[11px] text-slate-600">
-          天气:Open-Meteo · 空气质量:sojson · 地图:高德 · 数据仅保存在本地浏览器
+        <footer className="space-y-2 pb-6 text-center text-[11px] text-slate-600">
+          <p>天气与空气质量:Open-Meteo · 海拔:Open-Meteo Elevation · 地图与路线:高德 · 数据仅保存在本地浏览器</p>
+          <p>
+            <a className="transition hover:text-slate-400" href="./privacy.html" target="_blank" rel="noreferrer">
+              隐私政策
+            </a>
+            <span className="mx-2 text-slate-700">·</span>
+            <a className="transition hover:text-slate-400" href="./terms.html" target="_blank" rel="noreferrer">
+              用户协议
+            </a>
+          </p>
         </footer>
       </main>
     </div>
