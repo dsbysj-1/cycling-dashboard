@@ -1,0 +1,51 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: Inter, 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
+  @apply bg-night-950 text-slate-200 antialiased;
+}
+
+/* 通用卡片样式 */
+.card {
+  @apply rounded-2xl border border-white/10 bg-night-900/80 p-5 shadow-lg shadow-black/30;
+}
+
+.card-title {
+  @apply mb-4 flex items-center gap-2 text-sm font-semibold tracking-wide text-slate-300;
+}
+
+/* 表单控件统一风格 */
+.field-label {
+  @apply mb-1 block text-xs font-medium text-slate-400;
+}
+
+.field-input {
+  @apply w-full rounded-lg border border-white/10 bg-night-800 px-3 py-2 text-sm text-slate-100 outline-none transition
+    placeholder:text-slate-500 focus:border-sky-400/60 focus:ring-2 focus:ring-sky-400/20;
+}
+
+.btn {
+  @apply inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium transition
+    disabled:cursor-not-allowed disabled:opacity-40;
+}
+
+.btn-primary {
+  @apply btn bg-sky-500 text-white hover:bg-sky-400;
+}
+
+.btn-ghost {
+  @apply btn border border-white/10 bg-white/5 text-slate-200 hover:bg-white/10;
+}
+
+.btn-danger {
+  @apply btn border border-red-400/30 bg-red-500/10 text-red-300 hover:bg-red-500/20;
+}

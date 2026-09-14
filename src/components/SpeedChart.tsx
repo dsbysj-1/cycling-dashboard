@@ -1,0 +1,80 @@
+import { useMemo } from 'react'
+import { downsample, extent, niceTicks, scaleLinear, smoothLinePath } from '../utils/chartHelpers'
+
+interface Props {
+  data: { distanceKm: number; speed: number }[]
+}
+
+const W = 640
+const H = 220
+const PAD = { top: 14, right: 14, bottom: 26, left: 38 }
+
+/** 速度曲线:手写 SVG 折线图(仅展示,不参与评分) */
+export default function SpeedChart({ data }: Props) {
+  const chart = useMemo(() => {
+    // 无时间戳时所有速度为 0,此时没有可展示的速度信息
+    const pts = data.filter((d) => Number.isFinite(d.speed) && d.speed > 0)
+    if (pts.length < 2) return null
+    const sampled = downsample(pts, 240)
+    const [x0, x1] = extent(sampled.map((d) => d.distanceKm))
+    const [y0raw, y1raw] = extent(sampled.map((d) => d.speed))
+    const yPad = Math.max(2, (y1raw - y0raw) * 0.08)
+    const yTicks = niceTicks(Math.max(0, y0raw - yPad), y1raw + yPad, 4)
+    if (yTicks.length < 2) return null
+    const yMin = yTicks[0]
+    const yMax = yTicks[yTicks.length - 1]
+    const x = scaleLinear([x0, x1], [PAD.left, W - PAD.right])
+    const y = scaleLinear([yMin, yMax], [H - PAD.bottom, PAD.top])
+    const coords = sampled.map((d) => [x(d.distanceKm), y(d.speed)] as [number, number])
+    const avg = sampled.reduce((a, b) => a + b.speed, 0) / sampled.length
+    return { coords, xTicks: niceTicks(x0, x1, 6), yTicks, x, y, yMin, yMax, avg }
+  }, [data])
+
+  if (!chart) {
+    return (
+      <div className="flex h-40 items-center justify-center text-sm text-slate-500">
+        暂无速度数据 — 导入带时间戳的 GPX 后自动生成
+      </div>
+    )
+  }
+
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-full" role="img" aria-label="速度曲线">
+      {/* 网格与 Y 轴 */}
+      {chart.yTicks.map((t) => (
+        <g key={t}>
+          <line x1={PAD.left} x2={W - PAD.right} y1={chart.y(t)} y2={chart.y(t)} stroke="rgba(148,163,184,0.12)" />
+          <text x={PAD.left - 6} y={chart.y(t)} textAnchor="end" dominantBaseline="middle" style={{ fontSize: 10 }} className="fill-slate-500">
+            {t}
+          </text>
+        </g>
+      ))}
+      {/* X 轴(距离 km) */}
+      {chart.xTicks.map((t) => (
+        <text key={t} x={chart.x(t)} y={H - PAD.bottom + 14} textAnchor="middle" style={{ fontSize: 10 }} className="fill-slate-500">
+          {t}
+        </text>
+      ))}
+      {/* 平均速度参考线 */}
+      <line
+        x1={PAD.left}
+        x2={W - PAD.right}
+        y1={chart.y(chart.avg)}
+        y2={chart.y(chart.avg)}
+        stroke="rgba(251,191,36,0.5)"
+        strokeDasharray="4 4"
+      />
+      <text x={W - PAD.right} y={chart.y(chart.avg) - 5} textAnchor="end" style={{ fontSize: 10 }} className="fill-amber-400/80">
+        均速 {chart.avg.toFixed(1)} km/h
+      </text>
+      {/* 速度曲线 */}
+      <path d={smoothLinePath(chart.coords)} fill="none" stroke="#34d399" strokeWidth="2" strokeLinecap="round" />
+      {chart.coords.length > 0 && (
+        <circle cx={chart.coords[chart.coords.length - 1][0]} cy={chart.coords[chart.coords.length - 1][1]} r="3" fill="#34d399" />
+      )}
+      <text x={PAD.left + 4} y={PAD.top + 2} style={{ fontSize: 10 }} className="fill-slate-500">
+        km/h
+      </text>
+    </svg>
+  )
+}
