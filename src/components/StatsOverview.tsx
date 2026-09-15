@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { memo, useMemo } from 'react'
 import { BarChart3 } from 'lucide-react'
 import type { RideRecord } from '../types'
 import { scaleLinear } from '../utils/chartHelpers'
@@ -14,7 +14,7 @@ function dayISO(d: Date): string {
 }
 
 /** 近 30 天数据概览:骑行次数、里程、时长、爬升、平均分 + 近 6 周里程迷你柱图 */
-export default function StatsOverview({ rides }: Props) {
+function StatsOverview({ rides }: Props) {
   const stats = useMemo(() => {
     const today = new Date()
     const since = new Date(today)
@@ -69,21 +69,21 @@ export default function StatsOverview({ rides }: Props) {
 
   return (
     <section className="card">
-      <div className="mb-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm font-semibold tracking-wide text-slate-300">
+      <div className="mb-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm font-semibold tracking-wide text-t2">
         <span className="flex items-center gap-2">
-          <BarChart3 className="h-4 w-4 text-emerald-400" aria-hidden="true" />
+          <BarChart3 className="h-4 w-4 text-accent-emerald" aria-hidden="true" />
           近 30 天概览
         </span>
-        <span className="text-xs font-normal text-slate-500">共 {stats.count} 次骑行</span>
+        <span className="text-xs font-normal text-t4">共 {stats.count} 次骑行</span>
       </div>
 
       {stats.count === 0 ? (
-        <p className="rounded-lg border border-dashed border-white/15 px-3 py-4 text-center text-xs text-slate-500">
+        <p className="rounded-lg border border-dashed border-line px-3 py-4 text-center text-xs text-t4">
           最近 30 天还没有骑行记录
         </p>
       ) : (
         <>
-          <div className="flex items-center justify-around gap-2 rounded-lg border border-white/10 bg-white/5 px-2 py-2">
+          <div className="flex items-center justify-around gap-2 rounded-lg border border-line bg-fill px-2 py-2">
             <Metric value={stats.km} unit="km" label="总里程" accent />
             <Divider />
             <Metric value={stats.hours} unit="h" label="总时长" />
@@ -95,7 +95,7 @@ export default function StatsOverview({ rides }: Props) {
 
           {/* 近 6 周里程 */}
           <div className="mt-3">
-            <div className="mb-1 flex items-center justify-between text-[10px] text-slate-500">
+            <div className="mb-1 flex items-center justify-between text-[10px] text-t4">
               <span>近 6 周里程</span>
               <span>单周最高 {stats.maxKm} km</span>
             </div>
@@ -106,7 +106,7 @@ export default function StatsOverview({ rides }: Props) {
                 return (
                   <g key={w.label}>
                     <rect x={bx} y={barH - h} width="18" height={h} rx="3" fill="rgba(52,211,153,0.75)" />
-                    <text x={x(i)} y={barH + 11} textAnchor="middle" style={{ fontSize: 8 }} className="fill-slate-500">
+                    <text x={x(i)} y={barH + 11} textAnchor="middle" style={{ fontSize: 8 }} className="fill-t4">
                       {w.label}
                     </text>
                   </g>
@@ -123,15 +123,18 @@ export default function StatsOverview({ rides }: Props) {
 function Metric({ value, unit, label, accent }: { value: number | string; unit: string; label: string; accent?: boolean }) {
   return (
     <div className="text-center">
-      <div className={`text-base font-semibold ${accent ? 'text-emerald-400' : 'text-slate-100'}`}>
+      <div className={`text-base font-semibold ${accent ? 'text-accent-emerald' : 'text-t1'}`}>
         {value}
-        {unit && <span className="ml-0.5 text-[10px] font-normal text-slate-500">{unit}</span>}
+        {unit && <span className="ml-0.5 text-[10px] font-normal text-t4">{unit}</span>}
       </div>
-      <div className="text-[10px] text-slate-500">{label}</div>
+      <div className="text-[10px] text-t4">{label}</div>
     </div>
   )
 }
 
 function Divider() {
-  return <div className="h-7 w-px bg-white/10" aria-hidden="true" />
+  return <div className="h-7 w-px bg-fill-strong" aria-hidden="true" />
 }
+
+/** 该组件重渲染成本较高(图表计算 / 长列表),用 memo 避免父级状态变化时无谓重算 */
+export default memo(StatsOverview)

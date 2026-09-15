@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { memo, useMemo } from 'react'
 import type { TrackPoint } from '../types'
 import { downsample, extent, niceTicks, scaleLinear } from '../utils/chartHelpers'
 import { monotoneAreaPath, monotonePath } from '../utils/chartHelpers'
@@ -13,7 +13,7 @@ const H = 220
 const PAD = { top: 18, right: 14, bottom: 26, left: 44 }
 
 /** 海拔曲线:手写 SVG 面积图(单调插值,曲线不会溢出图表区域) */
-export default function ElevationChart({ track }: Props) {
+function ElevationChart({ track }: Props) {
   const chart = useMemo(() => {
     const withEle = track.filter((p) => p.ele != null && Number.isFinite(p.ele))
     if (withEle.length < 2) return null
@@ -56,7 +56,7 @@ export default function ElevationChart({ track }: Props) {
 
   if (!chart) {
     return (
-      <div className="flex h-40 items-center justify-center text-sm text-slate-500">
+      <div className="flex h-40 items-center justify-center text-sm text-t4">
         暂无海拔数据 — 导入含海拔的 GPX 或使用地图绘制（自动采样）后生成
       </div>
     )
@@ -67,13 +67,13 @@ export default function ElevationChart({ track }: Props) {
       {chart.yTicks.map((t) => (
         <g key={t}>
           <line x1={PAD.left} x2={W - PAD.right} y1={chart.y(t)} y2={chart.y(t)} className="chart-grid" />
-          <text x={PAD.left - 6} y={chart.y(t)} textAnchor="end" dominantBaseline="middle" style={{ fontSize: 10 }} className="fill-slate-500">
+          <text x={PAD.left - 6} y={chart.y(t)} textAnchor="end" dominantBaseline="middle" style={{ fontSize: 10 }} className="fill-t4">
             {Math.round(t)}
           </text>
         </g>
       ))}
       {chart.xTicks.map((t) => (
-        <text key={t} x={chart.x(t)} y={H - PAD.bottom + 14} textAnchor="middle" style={{ fontSize: 10 }} className="fill-slate-500">
+        <text key={t} x={chart.x(t)} y={H - PAD.bottom + 14} textAnchor="middle" style={{ fontSize: 10 }} className="fill-t4">
           {t}
         </text>
       ))}
@@ -83,24 +83,27 @@ export default function ElevationChart({ track }: Props) {
         x2={W - PAD.right}
         y1={chart.y(chart.eleMax)}
         y2={chart.y(chart.eleMax)}
-        stroke="rgba(251,191,36,0.35)"
+        className="chart-elevation-ref"
         strokeDasharray="4 4"
       />
-      <text x={W - PAD.right} y={chart.y(chart.eleMax) - 4} textAnchor="end" style={{ fontSize: 10 }} className="fill-amber-400/80">
+      <text x={W - PAD.right} y={chart.y(chart.eleMax) - 4} textAnchor="end" style={{ fontSize: 10 }} className="fill-accent-amber">
         最高 {Math.round(chart.eleMax)} m
       </text>
       {/* 海拔面积:描边与填充共用同一条单调曲线,不会错位 */}
       <path d={monotoneAreaPath(chart.coords, chart.baseline)} fill="url(#eleGradient)" stroke="none" />
-      <path d={monotonePath(chart.coords)} fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" />
+      <path d={monotonePath(chart.coords)} fill="none" className="chart-elevation" strokeWidth="2" strokeLinecap="round" />
       <defs>
         <linearGradient id="eleGradient" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="rgba(245,158,11,0.40)" />
-          <stop offset="100%" stopColor="rgba(245,158,11,0.03)" />
+          <stop offset="0%" className="chart-ele-area-top" />
+          <stop offset="100%" className="chart-ele-area-bottom" />
         </linearGradient>
       </defs>
-      <text x={PAD.left + 4} y={PAD.top - 4} style={{ fontSize: 10 }} className="fill-slate-500">
+      <text x={PAD.left + 4} y={PAD.top - 4} style={{ fontSize: 10 }} className="fill-t4">
         m · 区间 {Math.round(chart.eleMin)}–{Math.round(chart.eleMax)} m(落差 {chart.gain} m)
       </text>
     </svg>
   )
 }
+
+/** 该组件重渲染成本较高(图表计算 / 长列表),用 memo 避免父级状态变化时无谓重算 */
+export default memo(ElevationChart)

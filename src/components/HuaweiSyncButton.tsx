@@ -48,17 +48,17 @@ export default function HuaweiSyncButton({ onSynced, onError }: Props) {
       </button>
 
       {/* 连接状态指示器 */}
-      <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] text-slate-300">
+      <span className="inline-flex items-center gap-1.5 rounded-full border border-line bg-fill px-2.5 py-1 text-[11px] text-t2">
         <span
-          className={`h-1.5 w-1.5 rounded-full ${connected ? 'bg-emerald-400' : 'bg-slate-500'}`}
+          className={`h-1.5 w-1.5 rounded-full ${connected ? 'bg-accent-emerald' : 'bg-t5'}`}
           aria-hidden="true"
         />
         {connected ? '已连接' : '未连接'}
-        {connected && lastSyncedAt != null && <span className="text-slate-500">· {formatTime(lastSyncedAt)} 同步</span>}
+        {connected && lastSyncedAt != null && <span className="text-t4">· {formatTime(lastSyncedAt)} 同步</span>}
       </span>
 
       {data && (
-        <span className="text-[11px] text-slate-500">
+        <span className="text-[11px] text-t4">
           上次：{data.distance} km · {data.duration} 分钟 · 爬升 {data.elevationGain} m
         </span>
       )}

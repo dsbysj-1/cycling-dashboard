@@ -27,12 +27,12 @@ export default class ErrorBoundary extends Component<Props, State> {
     if (this.state.error) {
       return (
         <div className="mx-auto max-w-3xl p-6">
-          <div className="rounded-2xl border border-red-400/30 bg-red-500/5 p-6">
-            <h2 className="mb-2 text-base font-semibold text-red-300">页面出现异常</h2>
-            <p className="mb-4 text-sm leading-6 text-slate-300">
+          <div className="rounded-2xl border border-accent-red/30 bg-accent-red/5 p-6">
+            <h2 className="mb-2 text-base font-semibold text-accent-red-text">页面出现异常</h2>
+            <p className="mb-4 text-sm leading-6 text-t2">
               渲染过程中发生错误，已阻止白屏。本地数据仍保存在浏览器中，不会丢失。
             </p>
-            <pre className="mb-4 max-h-40 overflow-auto rounded-lg bg-black/40 p-3 text-xs text-red-200/90">
+            <pre className="mb-4 max-h-40 overflow-auto rounded-lg bg-fill p-3 text-xs text-accent-red-text">
               {this.state.error.message}
             </pre>
             <div className="flex gap-2">

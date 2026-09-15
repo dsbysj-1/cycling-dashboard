@@ -113,26 +113,26 @@ export default function RideCheckIn({ bikes, days, rides, onCheckIn, onClearToda
   if (todayEntry) {
     const bike = todayEntry.bikeId ? bikes.find((b) => b.id === todayEntry.bikeId) : null
     return (
-      <div className="rounded-xl border border-sky-400/20 bg-sky-400/5 p-3">
+      <div className="rounded-xl border border-accent-sky/20 bg-accent-sky/5 p-3">
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-          <span className="flex items-center gap-2 text-sm font-semibold tracking-wide text-slate-300">
+          <span className="flex items-center gap-2 text-sm font-semibold tracking-wide text-t2">
             {todayEntry.rode ? (
-              <CheckCircle2 className="h-4 w-4 text-emerald-400" aria-hidden="true" />
+              <CheckCircle2 className="h-4 w-4 text-accent-emerald" aria-hidden="true" />
             ) : (
-              <Moon className="h-4 w-4 text-slate-400" aria-hidden="true" />
+              <Moon className="h-4 w-4 text-t3" aria-hidden="true" />
             )}
             今日已打卡 · {today}
           </span>
 
           {todayEntry.rode ? (
             <>
-              <span className="text-sm text-emerald-300">
+              <span className="text-sm text-accent-emerald-text">
                 已骑行{bike ? ` · ${bike.name}(${BIKE_CATEGORIES[bike.category]})` : ''}
               </span>
               {todayEntry.distanceKm ? (
-                <span className="text-sm text-slate-300">{todayEntry.distanceKm} km</span>
+                <span className="text-sm text-t2">{todayEntry.distanceKm} km</span>
               ) : (
-                <span className="text-xs text-slate-500">未填距离</span>
+                <span className="text-xs text-t4">未填距离</span>
               )}
               {checkInRide && (
                 <button type="button" className="btn-ghost !py-1 !text-xs" onClick={() => onEditRide(checkInRide)}>
@@ -142,12 +142,12 @@ export default function RideCheckIn({ bikes, days, rides, onCheckIn, onClearToda
               )}
             </>
           ) : (
-            <span className="text-sm text-slate-400">今天休息</span>
+            <span className="text-sm text-t3">今天休息</span>
           )}
 
           <button
             type="button"
-            className="ml-auto text-[11px] text-slate-500 underline-offset-2 hover:text-slate-300 hover:underline"
+            className="ml-auto text-[11px] text-t4 underline-offset-2 hover:text-t2 hover:underline"
             onClick={() => void onClearToday()}
           >
             重新打卡
@@ -161,17 +161,17 @@ export default function RideCheckIn({ bikes, days, rides, onCheckIn, onClearToda
 
   // 未打卡
   return (
-    <div className="rounded-xl border border-sky-400/20 bg-sky-400/5 p-3">
+    <div className="rounded-xl border border-accent-sky/20 bg-accent-sky/5 p-3">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-        <span className="flex items-center gap-2 text-sm font-semibold tracking-wide text-slate-300">
-          <BikeIcon className="h-4 w-4 text-sky-400" aria-hidden="true" />
+        <span className="flex items-center gap-2 text-sm font-semibold tracking-wide text-t2">
+          <BikeIcon className="h-4 w-4 text-accent-sky" aria-hidden="true" />
           今天是否骑行 · {today}
         </span>
 
         <div className="flex items-center gap-2">
           <button
             type="button"
-            className={rode === true ? 'btn bg-emerald-500 text-white hover:bg-emerald-400' : 'btn-ghost'}
+            className={rode === true ? 'btn btn-solid-emerald' : 'btn-ghost'}
             onClick={() => {
               setRode(true)
               setError('')
@@ -181,7 +181,7 @@ export default function RideCheckIn({ bikes, days, rides, onCheckIn, onClearToda
           </button>
           <button
             type="button"
-            className={rode === false ? 'btn bg-slate-600 text-white hover:bg-slate-500' : 'btn-ghost'}
+            className={rode === false ? 'btn btn-solid-neutral' : 'btn-ghost'}
             onClick={() => {
               setRode(false)
               setError('')
@@ -219,14 +219,14 @@ export default function RideCheckIn({ bikes, days, rides, onCheckIn, onClearToda
       </div>
 
       {bikes.length === 0 && (
-        <p className="mt-2 text-xs text-amber-300/90">还没有单车 — 请先在「单车与轮胎」分页添加一辆，打卡时需要选择单车。</p>
+        <p className="mt-2 text-xs text-accent-amber-text">还没有单车 — 请先在「单车与轮胎」分页添加一辆，打卡时需要选择单车。</p>
       )}
       {rode === true && bikes.length > 0 && (
-        <p className="mt-2 text-[11px] leading-5 text-slate-500">
+        <p className="mt-2 text-[11px] leading-5 text-t4">
           打卡会生成今天的骑行记录并关联该车（同步累计里程、骑行次数与外胎寿命）;距离可留空，之后点「补充详细数据」补全。
         </p>
       )}
-      {error && <p className="mt-2 text-xs text-red-300">{error}</p>}
+      {error && <p className="mt-2 text-xs text-accent-red-text">{error}</p>}
 
       <StatsLine stats={stats} />
       {toast && <Toast toast={toast} onClose={() => setToast(null)} />}
@@ -236,18 +236,18 @@ export default function RideCheckIn({ bikes, days, rides, onCheckIn, onClearToda
 
 function StatsLine({ stats }: { stats: { rodeDays: number; restDays: number; streak: number; totalRodeDays: number } }) {
   return (
-    <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 border-t border-white/5 pt-3 text-[11px] text-slate-500">
+    <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 border-t border-line-soft pt-3 text-[11px] text-t4">
       <span>
-        本月骑行 <span className="text-emerald-300">{stats.rodeDays}</span> 天
+        本月骑行 <span className="text-accent-emerald-text">{stats.rodeDays}</span> 天
       </span>
       <span>
-        本月休息 <span className="text-slate-300">{stats.restDays}</span> 天
+        本月休息 <span className="text-t2">{stats.restDays}</span> 天
       </span>
       <span>
-        连续骑行 <span className="text-sky-300">{stats.streak}</span> 天
+        连续骑行 <span className="text-accent-sky-text">{stats.streak}</span> 天
       </span>
       <span>
-        累计打卡 <span className="text-slate-300">{stats.totalRodeDays}</span> 天
+        累计打卡 <span className="text-t2">{stats.totalRodeDays}</span> 天
       </span>
     </div>
   )

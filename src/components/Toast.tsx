@@ -17,9 +17,9 @@ interface Props {
 }
 
 const STYLES: Record<ToastType, { box: string; icon: string }> = {
-  success: { box: 'border-emerald-400/30 bg-emerald-500/15 text-emerald-200', icon: 'text-emerald-300' },
-  error: { box: 'border-red-400/30 bg-red-500/15 text-red-200', icon: 'text-red-300' },
-  info: { box: 'border-sky-400/30 bg-sky-500/15 text-sky-200', icon: 'text-sky-300' },
+  success: { box: 'border-accent-emerald/30 bg-accent-emerald/15 text-accent-emerald-text', icon: 'text-accent-emerald-text' },
+  error: { box: 'border-accent-red/30 bg-accent-red/15 text-accent-red-text', icon: 'text-accent-red-text' },
+  info: { box: 'border-accent-sky/30 bg-accent-sky/15 text-accent-sky-text', icon: 'text-accent-sky-text' },
 }
 
 /** 轻量 Toast:固定显示在窗口底部居中,自动消失,不引入额外的 UI 组件库 */

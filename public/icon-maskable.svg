@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- maskable 图标:背景铺满整圆(不加圆角,由系统裁剪),图形缩到中心安全区内,
+       避免被安卓自适应图标的圆形/方形遮罩切掉边缘 -->
+  <rect width="100" height="100" fill="#0b1020"/>
+  <g transform="translate(50 50) scale(0.68) translate(-50 -50)">
+    <circle cx="30" cy="72" r="14" fill="none" stroke="#38bdf8" stroke-width="5"/>
+    <circle cx="72" cy="72" r="14" fill="none" stroke="#38bdf8" stroke-width="5"/>
+    <path d="M30 72 L48 40 L66 40" fill="none" stroke="#34d399" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M48 40 L58 30" fill="none" stroke="#34d399" stroke-width="5" stroke-linecap="round"/>
+    <path d="M66 40 L72 72" fill="none" stroke="#34d399" stroke-width="5" stroke-linecap="round"/>
+  </g>
+</svg>

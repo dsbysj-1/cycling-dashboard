@@ -74,16 +74,16 @@ function TipsDropdown({
 }) {
   if (!open || tips.length === 0) return null
   return (
-    <ul className="absolute z-30 mt-1 max-h-56 w-full max-w-md overflow-auto rounded-lg border border-white/10 bg-night-900 py-1 shadow-xl shadow-black/50">
+    <ul className="absolute z-30 mt-1 max-h-56 w-full max-w-md overflow-auto rounded-lg border border-line bg-surface py-1 shadow-xl shadow-black/50">
       {tips.map((tip) => (
         <li key={tip.id}>
           <button
             type="button"
-            className="flex w-full items-center justify-between gap-3 px-3 py-2 text-left text-xs text-slate-300 hover:bg-white/10"
+            className="flex w-full items-center justify-between gap-3 px-3 py-2 text-left text-xs text-t2 hover:bg-fill-strong"
             onClick={() => onPick(tip)}
           >
             <span>{tip.name}</span>
-            {tip.address && <span className="shrink-0 text-slate-500">{tip.address}</span>}
+            {tip.address && <span className="shrink-0 text-t4">{tip.address}</span>}
           </button>
         </li>
       ))}
@@ -196,32 +196,32 @@ export default function RoutePlanner({
 
   if (status === 'nokey') {
     return (
-      <div className="rounded-xl border border-dashed border-white/15 bg-night-800/50 p-4 text-xs leading-6 text-slate-400">
-        自动路线规划需要高德 Key。请在 <code className="text-sky-300">.env</code> 配置{' '}
-        <code className="text-sky-300">VITE_AMAP_KEY</code> 与安全密钥后重启 dev 服务器。
+      <div className="rounded-xl border border-dashed border-line bg-surface-2/50 p-4 text-xs leading-6 text-t3">
+        自动路线规划需要高德 Key。请在 <code className="text-accent-sky-text">.env</code> 配置{' '}
+        <code className="text-accent-sky-text">VITE_AMAP_KEY</code> 与安全密钥后重启 dev 服务器。
       </div>
     )
   }
 
   return (
-    <div className="space-y-3 rounded-xl border border-white/10 bg-night-800/50 p-4">
+    <div className="space-y-3 rounded-xl border border-line bg-surface-2/50 p-4">
       {/* 起点选择 */}
       <div className="space-y-2">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-xs text-slate-400">起点</span>
-          <span className="inline-flex items-center gap-1 text-xs text-slate-200">
-            <MapPin className="h-3.5 w-3.5 text-sky-400" aria-hidden="true" />
+          <span className="text-xs text-t3">起点</span>
+          <span className="inline-flex items-center gap-1 text-xs text-t1">
+            <MapPin className="h-3.5 w-3.5 text-accent-sky" aria-hidden="true" />
             {originLabel}
           </span>
           {effectiveOrigin && (
-            <span className="text-[11px] text-slate-500">
+            <span className="text-[11px] text-t4">
               ({effectiveOrigin.lat.toFixed(4)}, {effectiveOrigin.lon.toFixed(4)})
             </span>
           )}
           {origin && (
             <button
               type="button"
-              className="text-[11px] text-slate-400 underline-offset-2 hover:text-slate-200 hover:underline"
+              className="text-[11px] text-t3 underline-offset-2 hover:text-t1 hover:underline"
               onClick={() => {
                 onOriginChange(null)
                 onPickingChange(false)
@@ -260,7 +260,7 @@ export default function RoutePlanner({
           </div>
           <button
             type="button"
-            className={picking ? 'btn bg-sky-500 text-white hover:bg-sky-400' : 'btn-ghost'}
+            className={picking ? 'btn btn-solid-sky' : 'btn-ghost'}
             onClick={() => onPickingChange(!picking)}
           >
             <Crosshair className="h-4 w-4" aria-hidden="true" />
@@ -271,7 +271,7 @@ export default function RoutePlanner({
             {locating ? '定位中…' : '使用我的位置'}
           </button>
         </div>
-        {locError && <p className="text-xs text-amber-300/90">{locError}</p>}
+        {locError && <p className="text-xs text-accent-amber-text">{locError}</p>}
       </div>
 
       {/* 目的地 */}
@@ -318,13 +318,13 @@ export default function RoutePlanner({
         />
       </div>
 
-      {!AMAP_KEY && <p className="text-xs text-amber-300/90">未配置高德 Key,无法自动规划路线。</p>}
-      {progress && <p className="text-xs text-sky-300">{progress}</p>}
-      {error && <p className="text-xs text-red-300/90">{error}</p>}
+      {!AMAP_KEY && <p className="text-xs text-accent-amber-text">未配置高德 Key,无法自动规划路线。</p>}
+      {progress && <p className="text-xs text-accent-sky-text">{progress}</p>}
+      {error && <p className="text-xs text-accent-red-text">{error}</p>}
 
       {candidates.length > 0 && (
         <div className="space-y-2">
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-t3">
             共 {candidates.length} 条候选路线，点击即自动填入数据并采集环境信息：
           </p>
           <ul className="grid gap-2 sm:grid-cols-2">
@@ -337,25 +337,25 @@ export default function RoutePlanner({
                     onClick={() => onSelect(c)}
                     className={`w-full rounded-lg border px-3 py-2.5 text-left transition ${
                       active
-                        ? 'border-sky-400/60 bg-sky-400/10'
-                        : 'border-white/10 bg-night-900/70 hover:border-white/20 hover:bg-white/5'
+                        ? 'border-accent-sky/60 bg-accent-sky/10'
+                        : 'border-line bg-surface/70 hover:border-line hover:bg-fill'
                     }`}
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <span className="truncate text-sm font-medium text-slate-100">
+                      <span className="truncate text-sm font-medium text-t1">
                         {c.name}
                         {c.primary && (
-                          <span className="ml-2 rounded bg-sky-400/20 px-1.5 py-0.5 text-[10px] text-sky-300">目的地</span>
+                          <span className="ml-2 rounded bg-accent-sky/20 px-1.5 py-0.5 text-[10px] text-accent-sky-text">目的地</span>
                         )}
                       </span>
-                      {active && <span className="shrink-0 text-[10px] text-sky-300">已选择</span>}
+                      {active && <span className="shrink-0 text-[10px] text-accent-sky-text">已选择</span>}
                     </div>
-                    <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-slate-400">
-                      <span className="text-emerald-300">{c.distanceKm} km</span>
+                    <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-t3">
+                      <span className="text-accent-emerald-text">{c.distanceKm} km</span>
                       <span>约 {c.durationMin} 分钟</span>
                       <span>均速 {c.avgSpeed} km/h</span>
                     </div>
-                    {c.address && <div className="mt-0.5 truncate text-[10px] text-slate-500">{c.address}</div>}
+                    {c.address && <div className="mt-0.5 truncate text-[10px] text-t4">{c.address}</div>}
                   </button>
                 </li>
               )

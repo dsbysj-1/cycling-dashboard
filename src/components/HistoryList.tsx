@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { memo, useMemo, useState } from 'react'
 import { Bike as BikeIcon, MapPin, Pencil } from 'lucide-react'
 import type { Bike, RideRecord } from '../types'
 import { SURFACE_LABELS, TRAFFIC_LABELS } from '../types'
@@ -59,7 +59,7 @@ function downloadBlob(blob: Blob, filename: string) {
 }
 
 /** 历史记录:筛选、查看、编辑、删除、导出;路线编号可在列表内重命名 */
-export default function HistoryList({ rides, bikes, selectedId, onSelect, onEdit, onDelete, onRename }: Props) {
+function HistoryList({ rides, bikes, selectedId, onSelect, onEdit, onDelete, onRename }: Props) {
   const [from, setFrom] = useState('')
   const [to, setTo] = useState('')
   /** 正在重命名的记录 id 与草稿值 */
@@ -111,14 +111,14 @@ export default function HistoryList({ rides, bikes, selectedId, onSelect, onEdit
       </div>
 
       {filtered.length === 0 ? (
-        <div className="flex h-28 items-center justify-center rounded-xl border border-dashed border-white/15 text-sm text-slate-500">
+        <div className="flex h-28 items-center justify-center rounded-xl border border-dashed border-line text-sm text-t4">
           {rides.length === 0 ? '暂无骑行记录' : '该时间范围内无记录'}
         </div>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full min-w-[900px] text-sm">
             <thead>
-              <tr className="border-b border-white/10 text-left text-xs text-slate-500">
+              <tr className="border-b border-line text-left text-xs text-t4">
                 <th className="px-3 py-2 font-medium">路线</th>
                 <th className="px-3 py-2 font-medium">日期</th>
                 <th className="px-3 py-2 font-medium">单车</th>
@@ -136,8 +136,8 @@ export default function HistoryList({ rides, bikes, selectedId, onSelect, onEdit
               {filtered.map((r) => (
                 <tr
                   key={r.id}
-                  className={`cursor-pointer border-b border-white/5 transition hover:bg-white/5 ${
-                    selectedId === r.id ? 'bg-sky-500/10' : ''
+                  className={`cursor-pointer border-b border-line-soft transition hover:bg-fill ${
+                    selectedId === r.id ? 'bg-accent-sky/10' : ''
                   }`}
                   onClick={() => onSelect(r.id)}
                 >
@@ -153,7 +153,7 @@ export default function HistoryList({ rides, bikes, selectedId, onSelect, onEdit
                           if (e.key === 'Enter') commitRename(r.id, draft)
                           if (e.key === 'Escape') setEditingId(null)
                         }}
-                        className="w-20 rounded border border-sky-400/50 bg-night-800 px-1.5 py-0.5 text-xs text-slate-100 outline-none"
+                        className="w-20 rounded border border-accent-sky/50 bg-surface-2 px-1.5 py-0.5 text-xs text-t1 outline-none"
                       />
                     ) : (
                       <button
@@ -163,29 +163,29 @@ export default function HistoryList({ rides, bikes, selectedId, onSelect, onEdit
                           setEditingId(r.id)
                           setDraft(r.label ?? '')
                         }}
-                        className="group inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-xs text-slate-200 hover:bg-white/10"
+                        className="group inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-xs text-t1 hover:bg-fill-strong"
                       >
                         <span className="font-medium">{r.label || '—'}</span>
-                        <Pencil className="h-3 w-3 text-slate-500 opacity-0 transition group-hover:opacity-100" aria-hidden="true" />
+                        <Pencil className="h-3 w-3 text-t4 opacity-0 transition group-hover:opacity-100" aria-hidden="true" />
                       </button>
                     )}
                   </td>
                   <td className="px-3 py-2.5 whitespace-nowrap">{r.date}</td>
-                  <td className="max-w-[130px] truncate px-3 py-2.5 text-slate-300">
+                  <td className="max-w-[130px] truncate px-3 py-2.5 text-t2">
                     {r.bikeId && bikeNames.has(r.bikeId) ? (
                       <span className="inline-flex items-center gap-1">
-                        <BikeIcon className="h-3 w-3 shrink-0 text-sky-400/80" aria-hidden="true" />
+                        <BikeIcon className="h-3 w-3 shrink-0 text-accent-sky" aria-hidden="true" />
                         {bikeNames.get(r.bikeId)}
                       </span>
                     ) : (
-                      <span className="text-slate-600">—</span>
+                      <span className="text-t5">—</span>
                     )}
                   </td>
-                  <td className="max-w-[170px] truncate px-3 py-2.5 text-slate-300" title={r.routeName ?? undefined}>
-                    {r.routeName || <span className="text-slate-600">—</span>}
+                  <td className="max-w-[170px] truncate px-3 py-2.5 text-t2" title={r.routeName ?? undefined}>
+                    {r.routeName || <span className="text-t5">—</span>}
                   </td>
                   <td
-                    className="max-w-[180px] truncate px-3 py-2.5 text-slate-400"
+                    className="max-w-[180px] truncate px-3 py-2.5 text-t3"
                     title={
                       r.location
                         ? `${r.startName || '起点'}\n坐标：${r.location.lat.toFixed(4)}, ${r.location.lon.toFixed(4)}`
@@ -194,25 +194,25 @@ export default function HistoryList({ rides, bikes, selectedId, onSelect, onEdit
                   >
                     {r.startDistrict || r.startName ? (
                       <span className="inline-flex items-center gap-1">
-                        <MapPin className="h-3 w-3 shrink-0 text-amber-400/80" aria-hidden="true" />
+                        <MapPin className="h-3 w-3 shrink-0 text-accent-amber" aria-hidden="true" />
                         {r.startDistrict || r.startName}
                       </span>
                     ) : (
-                      <span className="text-slate-600">{r.cityName}</span>
+                      <span className="text-t5">{r.cityName}</span>
                     )}
                   </td>
                   <td className="px-3 py-2.5 whitespace-nowrap">
                     {r.distanceKm ? (
                       `${r.distanceKm} km`
                     ) : r.checkIn ? (
-                      <span className="rounded bg-sky-400/15 px-1.5 py-0.5 text-[10px] text-sky-300" title="由今日骑行打卡生成，可编辑补充距离等详细数据">
+                      <span className="rounded bg-accent-sky/15 px-1.5 py-0.5 text-[10px] text-accent-sky-text" title="由今日骑行打卡生成，可编辑补充距离等详细数据">
                         打卡
                       </span>
                     ) : (
                       '—'
                     )}
                   </td>
-                  <td className="px-3 py-2.5 text-slate-400">{r.route.elevationGain ?? '—'} m</td>
+                  <td className="px-3 py-2.5 text-t3">{r.route.elevationGain ?? '—'} m</td>
                   <td className="px-3 py-2.5">
                     <ScoreDot value={r.scores?.weather} />
                   </td>
@@ -224,12 +224,12 @@ export default function HistoryList({ rides, bikes, selectedId, onSelect, onEdit
                   </td>
                   <td className="px-3 py-2.5 text-right" onClick={(e) => e.stopPropagation()}>
                     <div className="flex justify-end gap-1.5">
-                      <button type="button" className="rounded-md px-2 py-1 text-xs text-sky-300 hover:bg-sky-400/10" onClick={() => onEdit(r)}>
+                      <button type="button" className="rounded-md px-2 py-1 text-xs text-accent-sky-text hover:bg-accent-sky/10" onClick={() => onEdit(r)}>
                         编辑
                       </button>
                       <button
                         type="button"
-                        className="rounded-md px-2 py-1 text-xs text-red-300 hover:bg-red-400/10"
+                        className="rounded-md px-2 py-1 text-xs text-accent-red-text hover:bg-accent-red/10"
                         onClick={() => {
                           if (confirm(`删除 ${r.date} 的骑行记录？`)) onDelete(r.id)
                         }}
@@ -249,20 +249,20 @@ export default function HistoryList({ rides, bikes, selectedId, onSelect, onEdit
 }
 
 function scoreClass(value?: number): string {
-  if (value == null) return 'text-slate-500'
-  if (value >= 85) return 'text-emerald-400'
-  if (value >= 70) return 'text-sky-400'
-  if (value >= 50) return 'text-amber-400'
-  return 'text-red-400'
+  if (value == null) return 'text-t4'
+  if (value >= 85) return 'text-accent-emerald'
+  if (value >= 70) return 'text-accent-sky'
+  if (value >= 50) return 'text-accent-amber'
+  return 'text-accent-red'
 }
 
 function ScoreDot({ value, amber }: { value?: number; amber?: boolean }) {
-  if (value == null) return <span className="text-slate-600">—</span>
+  if (value == null) return <span className="text-t5">—</span>
   return (
     <span className="inline-flex items-center gap-1.5">
-      <span className={`h-1.5 w-8 overflow-hidden rounded-full bg-white/10`}>
+      <span className={`h-1.5 w-8 overflow-hidden rounded-full bg-fill-strong`}>
         <span
-          className={`block h-full rounded-full ${amber ? 'bg-amber-400/80' : 'bg-emerald-400/80'}`}
+          className={`block h-full rounded-full ${amber ? 'bg-accent-amber/80' : 'bg-accent-emerald/80'}`}
           style={{ width: `${value}%` }}
         />
       </span>
@@ -270,3 +270,6 @@ function ScoreDot({ value, amber }: { value?: number; amber?: boolean }) {
     </span>
   )
 }
+
+/** 该组件重渲染成本较高(图表计算 / 长列表),用 memo 避免父级状态变化时无谓重算 */
+export default memo(HistoryList)

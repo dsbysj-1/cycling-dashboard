@@ -2,10 +2,15 @@
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
-    <link rel="manifest" href="/manifest.json" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="./icon.svg" />
+    <!-- manifest 由 vite-plugin-pwa 在构建时注入 -->
+    <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#0b1020" />
+    <meta
+      name="description"
+      content="个人骑行记录与评分看板:记录骑行数据,结合天气、空气质量与路线海拔坡度计算综合评分,并以速度曲线、海拔曲线、评分雷达与地图轨迹展示。数据仅保存在本地。"
+    />
     <title>骑行评分监测看板</title>
   </head>
   <body>

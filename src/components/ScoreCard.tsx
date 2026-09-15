@@ -1,20 +1,21 @@
+import { memo } from 'react'
 import type { RideRecord } from '../types'
 import { rainLevelLabel } from '../utils/scoring'
 
 /** 评分卡片:综合分、分项、降雨指数、文字评价与建议 */
-export default function ScoreCard({ record }: { record: RideRecord }) {
+function ScoreCard({ record }: { record: RideRecord }) {
   const scores = record.scores
   if (!scores) {
     return (
-      <div className="flex h-40 items-center justify-center text-sm text-slate-500">暂无评分数据</div>
+      <div className="flex h-40 items-center justify-center text-sm text-t4">暂无评分数据</div>
     )
   }
 
   const rainLabel = rainLevelLabel(scores.rainFactor, record.env.precipitation, record.env.precipitationProbability)
-  const scoreColor =
-    scores.total >= 85 ? 'text-emerald-400' : scores.total >= 70 ? 'text-sky-400' : scores.total >= 50 ? 'text-amber-400' : 'text-red-400'
-  const ring =
-    scores.total >= 85 ? '#34d399' : scores.total >= 70 ? '#38bdf8' : scores.total >= 50 ? '#fbbf24' : '#f87171'
+  /** 评分档位:环与数字同档同色,配色由 index.css 的主题变量驱动 */
+  const band = scores.total >= 85 ? 'excellent' : scores.total >= 70 ? 'good' : scores.total >= 50 ? 'fair' : 'poor'
+  const scoreColor = `score-text-${band}`
+  const ringClass = `score-ring-${band}`
 
   return (
     <div className="space-y-4">
@@ -28,7 +29,7 @@ export default function ScoreCard({ record }: { record: RideRecord }) {
               cy="50"
               r="42"
               fill="none"
-              stroke={ring}
+              className={ringClass}
               strokeWidth="10"
               strokeLinecap="round"
               strokeDasharray={`${(scores.total / 100) * 2 * Math.PI * 42} ${2 * Math.PI * 42}`}
@@ -36,18 +37,18 @@ export default function ScoreCard({ record }: { record: RideRecord }) {
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
             <span className={`text-3xl font-bold ${scoreColor}`}>{scores.total}</span>
-            <span className="text-[10px] text-slate-500">综合评分</span>
+            <span className="text-[10px] text-t4">综合评分</span>
           </div>
         </div>
         <div className="min-w-0 flex-1 space-y-2">
           <div className="flex gap-2">
-            <SubScore label="天气 60%" value={scores.weather} color="bg-emerald-400/80" />
-            <SubScore label="路线 40%" value={scores.route} color="bg-amber-400/80" />
+            <SubScore label="天气 60%" value={scores.weather} color="bg-accent-emerald/80" />
+            <SubScore label="路线 40%" value={scores.route} color="bg-accent-amber/80" />
           </div>
-          <div className="rounded-lg border border-white/10 bg-night-800 px-3 py-2 text-xs leading-5 text-slate-300">
-            <span className="text-sky-300">降雨指数：{scores.rainFactor}</span>({rainLabel})
+          <div className="rounded-lg border border-line bg-surface-2 px-3 py-2 text-xs leading-5 text-t2">
+            <span className="text-accent-sky-text">降雨指数：{scores.rainFactor}</span>({rainLabel})
             {(record.env.precipitation != null || record.env.precipitationProbability != null) && (
-              <span className="text-slate-500">
+              <span className="text-t4">
                 {' '}
                 · 降水 {record.env.precipitation ?? '—'}mm · 概率 {record.env.precipitationProbability ?? '—'}%
               </span>
@@ -56,13 +57,13 @@ export default function ScoreCard({ record }: { record: RideRecord }) {
         </div>
       </div>
 
-      <p className="rounded-lg border border-white/10 bg-night-800/70 px-4 py-3 text-sm leading-6 text-slate-200">{record.comment}</p>
+      <p className="rounded-lg border border-line bg-surface-2/70 px-4 py-3 text-sm leading-6 text-t1">{record.comment}</p>
 
       {record.suggestions.length > 0 && (
         <ul className="space-y-1.5">
           {record.suggestions.map((s, i) => (
-            <li key={i} className="flex gap-2 text-xs leading-5 text-slate-400">
-              <span className="text-amber-400">▲</span>
+            <li key={i} className="flex gap-2 text-xs leading-5 text-t3">
+              <span className="text-accent-amber">▲</span>
               {s}
             </li>
           ))}
@@ -74,14 +75,17 @@ export default function ScoreCard({ record }: { record: RideRecord }) {
 
 function SubScore({ label, value, color }: { label: string; value: number; color: string }) {
   return (
-    <div className="flex-1 rounded-lg border border-white/10 bg-night-800 px-3 py-2">
+    <div className="flex-1 rounded-lg border border-line bg-surface-2 px-3 py-2">
       <div className="flex items-baseline justify-between">
-        <span className="whitespace-nowrap text-[10px] text-slate-500">{label}</span>
-        <span className="text-lg font-semibold text-slate-100">{value}</span>
+        <span className="whitespace-nowrap text-[10px] text-t4">{label}</span>
+        <span className="text-lg font-semibold text-t1">{value}</span>
       </div>
-      <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-white/10">
+      <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-fill-strong">
         <div className={`h-full rounded-full ${color}`} style={{ width: `${value}%` }} />
       </div>
     </div>
   )
 }
+
+/** 该组件重渲染成本较高(图表计算 / 长列表),用 memo 避免父级状态变化时无谓重算 */
+export default memo(ScoreCard)

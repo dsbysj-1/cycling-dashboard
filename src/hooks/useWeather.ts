@@ -29,13 +29,14 @@ export function kmhToBeaufort(kmh: number): number {
   return level
 }
 
-function fetchJSON(url: string, timeoutMs = 10000): Promise<any> {
+/** 统一的 JSON 请求:带超时,由调用处用具体响应类型收窄返回结构 */
+function fetchJSON<T>(url: string, timeoutMs = 10000): Promise<T> {
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), timeoutMs)
   return fetch(url, { signal: controller.signal })
     .then(async (res) => {
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      return res.json()
+      return res.json() as Promise<T>
     })
     .finally(() => clearTimeout(timer))
 }
@@ -70,6 +71,11 @@ interface HourlySlice {
   wind_speed_10m?: (number | null)[]
   us_aqi?: (number | null)[]
   pm2_5?: (number | null)[]
+}
+
+/** sojson 备选接口的响应(只用到 data.aqi / data.pm25) */
+interface SojsonResponse {
+  data?: { aqi?: string | number; pm25?: string | number }
 }
 
 interface OpenMeteoResponse {
@@ -160,7 +166,7 @@ export async function fetchWeather(params: WeatherParams): Promise<WeatherResult
       `&past_days=0&forecast_days=${-daysAgo + 1}&timezone=auto`
   }
 
-  const data: OpenMeteoResponse = await fetchJSON(url)
+  const data = await fetchJSON<OpenMeteoResponse>(url)
   const daily = data.daily
   const dailyTime = (daily?.time as string[] | undefined) ?? []
   if (!dailyTime.length) throw new Error('未查询到该日期的天气数据')
@@ -268,7 +274,7 @@ export async function fetchAirQuality(params: WeatherParams): Promise<AqiResult>
 /** 备选:sojson 空气质量(常限流/跨域受限,仅在主数据源失败时尝试) */
 export async function fetchAqiFromSojson(cityCode: string): Promise<AqiResult> {
   if (!cityCode) throw new Error('未提供城市编码')
-  const data = await fetchJSON(`https://api.sojson.com/api/weather/city/${cityCode}`, 8000)
+  const data = await fetchJSON<SojsonResponse>(`https://api.sojson.com/api/weather/city/${cityCode}`, 8000)
   const aqiRaw = data?.data?.aqi
   const aqi = aqiRaw != null ? parseInt(String(aqiRaw), 10) : NaN
   if (!Number.isFinite(aqi)) throw new Error('sojson 数据解析失败')

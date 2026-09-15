@@ -2,58 +2,164 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ============ 主题变量:昼夜两套(用 data-theme 切换) ============ */
+/* ============================================================
+   主题变量:昼夜两套(用 data-theme 切换)
+
+   命名约定:
+   - --page / --surface / --surface-2 / --c-*-rgb 以 RGB 三元组存放,
+     配合 tailwind.config.js 里的 <alpha-value> 支持 bg-surface/80 这类透明度修饰符;
+   - --line / --fill / --t1…--t6 是完整色值,直接由 Tailwind token 引用;
+   - 图表与评分档位配色统一走 --chart-* / --score-*,避免组件里出现硬编码色值。
+   组件请只用 tailwind.config.js 中定义的语义 token,不要写死 slate/white/night。
+   ============================================================ */
 :root,
 [data-theme='dark'] {
   color-scheme: dark;
+
+  /* 基础面板(需支持透明度,故用 RGB 三元组) */
   --page: #0b1020;
+  --page-rgb: 11 16 32;
   --surface: #101830;
+  --surface-rgb: 16 24 48;
   --surface-2: #18234a;
+  --surface-2-rgb: 24 35 74;
   --card-bg: rgba(16, 24, 48, 0.8);
   --card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+
+  /* 描边与填充 */
   --line: rgba(255, 255, 255, 0.1);
   --line-soft: rgba(255, 255, 255, 0.05);
   --fill: rgba(255, 255, 255, 0.05);
   --fill-strong: rgba(255, 255, 255, 0.1);
+
+  /* 文字层级 */
   --t1: #e2e8f0;
   --t2: #cbd5e1;
   --t3: #94a3b8;
   --t4: #64748b;
   --t5: #475569;
   --t6: #334155;
+
+  /* 强调色(DEFAULT 用于图形/描边,text 用于文字) */
+  --c-sky-rgb: 56 189 248;
+  --c-sky-text-rgb: 125 211 252;
+  --c-emerald-rgb: 52 211 153;
+  --c-emerald-text-rgb: 110 231 183;
+  --c-amber-rgb: 251 191 36;
+  --c-amber-text-rgb: 252 211 77;
+  --c-red-rgb: 248 113 113;
+  --c-red-text-rgb: 252 165 165;
+
+  /* 图表 */
   --chart-grid: rgba(148, 163, 184, 0.18);
   --chart-grid-strong: rgba(148, 163, 184, 0.28);
-  --accent-sky: #38bdf8;
-  --accent-sky-text: #7dd3fc;
-  --accent-emerald-text: #6ee7b7;
-  --accent-amber-text: #fcd34d;
-  --accent-red-text: #fca5a5;
+  --chart-total: #38bdf8;
+  --chart-weather: #34d399;
+  --chart-route: #fbbf24;
+  --chart-total-soft: rgba(56, 189, 248, 0.2);
+  --chart-total-label: #bae6fd;
+  --chart-area-top: rgba(56, 189, 248, 0.16);
+  --chart-area-bottom: rgba(56, 189, 248, 0.01);
+  --chart-elevation: #f59e0b;
+  --chart-elevation-ref: rgba(251, 191, 36, 0.35);
+  --chart-avg-ref: rgba(251, 191, 36, 0.5);
+  --chart-elevation-area-top: rgba(245, 158, 11, 0.4);
+  --chart-elevation-area-bottom: rgba(245, 158, 11, 0.03);
+  --chart-zone-excellent: rgba(52, 211, 153, 0.1);
+  --chart-zone-good: rgba(56, 189, 248, 0.08);
+  --chart-zone-fair: rgba(251, 191, 36, 0.07);
+  --chart-zone-poor: rgba(248, 113, 113, 0.07);
+  --chart-radar-stroke: #38bdf8;
+  --chart-radar-fill: rgba(56, 189, 248, 0.25);
+
+  /* 评分档位(与图表配色一致) */
+  --score-excellent: #34d399;
+  --score-good: #38bdf8;
+  --score-fair: #fbbf24;
+  --score-poor: #f87171;
+
+  /* 实心按钮底色(配合白字使用) */
+  --solid-sky-bg: #0284c7;
+  --solid-sky-bg-hover: #0ea5e9;
+  --solid-emerald-bg: #059669;
+  --solid-emerald-bg-hover: #10b981;
+  --solid-amber-bg: #d97706;
+  --solid-amber-bg-hover: #f59e0b;
+  --solid-neutral-bg: #475569;
+  --solid-neutral-bg-hover: #64748b;
+  --solid-neutral-fg: #f8fafc;
 }
 
 [data-theme='light'] {
   color-scheme: light;
+
   --page: #f4f6fa;
+  --page-rgb: 244 246 250;
   --surface: #ffffff;
+  --surface-rgb: 255 255 255;
   --surface-2: #f8fafc;
+  --surface-2-rgb: 248 250 252;
   --card-bg: #ffffff;
   --card-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 8px 24px -12px rgba(15, 23, 42, 0.12);
+
   --line: rgba(15, 23, 42, 0.1);
   --line-soft: rgba(15, 23, 42, 0.06);
   --fill: rgba(15, 23, 42, 0.04);
   --fill-strong: rgba(15, 23, 42, 0.08);
+
   --t1: #0f172a;
   --t2: #1e293b;
   --t3: #334155;
   --t4: #475569;
   --t5: #64748b;
   --t6: #94a3b8;
+
+  /* 强调色换成更深一档:深色主题用的浅色调在浅色背景上对比不足 */
+  --c-sky-rgb: 2 132 199;
+  --c-sky-text-rgb: 3 105 161;
+  --c-emerald-rgb: 5 150 105;
+  --c-emerald-text-rgb: 4 120 87;
+  --c-amber-rgb: 217 119 6;
+  --c-amber-text-rgb: 180 83 9;
+  --c-red-rgb: 220 38 38;
+  --c-red-text-rgb: 185 28 28;
+
   --chart-grid: rgba(15, 23, 42, 0.1);
   --chart-grid-strong: rgba(15, 23, 42, 0.18);
-  --accent-sky: #0284c7;
-  --accent-sky-text: #0369a1;
-  --accent-emerald-text: #047857;
-  --accent-amber-text: #b45309;
-  --accent-red-text: #b91c1c;
+  --chart-total: #0284c7;
+  --chart-weather: #059669;
+  --chart-route: #d97706;
+  --chart-total-soft: rgba(2, 132, 199, 0.16);
+  --chart-total-label: #0369a1;
+  --chart-area-top: rgba(2, 132, 199, 0.14);
+  --chart-area-bottom: rgba(2, 132, 199, 0.01);
+  --chart-elevation: #d97706;
+  --chart-elevation-ref: rgba(217, 119, 6, 0.3);
+  --chart-avg-ref: rgba(217, 119, 6, 0.45);
+  --chart-elevation-area-top: rgba(217, 119, 6, 0.26);
+  --chart-elevation-area-bottom: rgba(217, 119, 6, 0.02);
+  --chart-zone-excellent: rgba(5, 150, 105, 0.07);
+  --chart-zone-good: rgba(2, 132, 199, 0.06);
+  --chart-zone-fair: rgba(217, 119, 6, 0.06);
+  --chart-zone-poor: rgba(220, 38, 38, 0.05);
+  --chart-radar-stroke: #0284c7;
+  --chart-radar-fill: rgba(2, 132, 199, 0.16);
+
+  --score-excellent: #059669;
+  --score-good: #0284c7;
+  --score-fair: #d97706;
+  --score-poor: #dc2626;
+
+  /* 浅色背景下深一档,白字对比度 ≥4.5:1 */
+  --solid-sky-bg: #0369a1;
+  --solid-sky-bg-hover: #0284c7;
+  --solid-emerald-bg: #047857;
+  --solid-emerald-bg-hover: #059669;
+  --solid-amber-bg: #b45309;
+  --solid-amber-bg-hover: #d97706;
+  --solid-neutral-bg: #334155;
+  --solid-neutral-bg-hover: #475569;
+  --solid-neutral-fg: #f8fafc;
 }
 
 html,
@@ -114,8 +220,8 @@ body {
   color: var(--t5);
 }
 .field-input:focus {
-  border-color: rgb(56 189 248 / 0.6);
-  box-shadow: 0 0 0 2px rgb(56 189 248 / 0.2);
+  border-color: rgb(var(--c-sky-rgb) / 0.6);
+  box-shadow: 0 0 0 2px rgb(var(--c-sky-rgb) / 0.2);
 }
 
 /* 按钮基类:所有变体共用(字号/字重/圆角/内边距一致,避免不同按钮字体不一样) */
@@ -162,15 +268,47 @@ body {
 }
 
 .btn-danger {
-  border: 1px solid rgb(248 113 113 / 0.3);
-  background: rgb(239 68 68 / 0.1);
-  color: var(--accent-red-text);
+  border: 1px solid rgb(var(--c-red-rgb) / 0.3);
+  background: rgb(var(--c-red-rgb) / 0.1);
+  color: rgb(var(--c-red-text-rgb));
 }
 .btn-danger:hover:not(:disabled) {
-  background: rgb(239 68 68 / 0.2);
+  background: rgb(var(--c-red-rgb) / 0.2);
 }
 
-/* 图表网格线(SVG 里用 class,便于跟随主题) */
+/* 选中态按钮:实心强调底 + 白字。
+   浅色主题下取更深一档的强调色,保证白字对比度仍在 4.5:1 以上 */
+.btn-solid-sky {
+  background: var(--solid-sky-bg);
+  color: #fff;
+}
+.btn-solid-sky:hover:not(:disabled) {
+  background: var(--solid-sky-bg-hover);
+}
+.btn-solid-emerald {
+  background: var(--solid-emerald-bg);
+  color: #fff;
+}
+.btn-solid-emerald:hover:not(:disabled) {
+  background: var(--solid-emerald-bg-hover);
+}
+.btn-solid-amber {
+  background: var(--solid-amber-bg);
+  color: #fff;
+}
+.btn-solid-amber:hover:not(:disabled) {
+  background: var(--solid-amber-bg-hover);
+}
+.btn-solid-neutral {
+  background: var(--solid-neutral-bg);
+  color: var(--solid-neutral-fg);
+}
+.btn-solid-neutral:hover:not(:disabled) {
+  background: var(--solid-neutral-bg-hover);
+}
+
+/* ============ 图表配色(SVG 用 class 而非属性,才能跟随主题)
+   注:SVG 展示属性不支持 var(),必须以 CSS 声明生效 ============ */
 .chart-grid {
   stroke: var(--chart-grid);
 }
@@ -178,102 +316,107 @@ body {
   stroke: var(--chart-grid-strong);
 }
 
-/* ============ 浅色模式:重映射组件里直接用到的工具类 ============
-   属性选择器 + 类选择器特异性高于单个工具类,无需 !important */
-[data-theme='light'] .text-white {
-  color: #fff;
+.chart-total {
+  stroke: var(--chart-total);
 }
-[data-theme='light'] .text-slate-100,
-[data-theme='light'] .text-slate-200 {
-  color: var(--t1);
+.chart-weather {
+  stroke: var(--chart-weather);
 }
-[data-theme='light'] .text-slate-300 {
-  color: var(--t2);
+.chart-route {
+  stroke: var(--chart-route);
 }
-[data-theme='light'] .text-slate-400 {
-  color: var(--t3);
+.chart-speed {
+  stroke: var(--chart-weather);
 }
-[data-theme='light'] .text-slate-500 {
-  color: var(--t4);
+.chart-elevation {
+  stroke: var(--chart-elevation);
 }
-[data-theme='light'] .text-slate-600 {
-  color: var(--t5);
+.chart-elevation-ref {
+  stroke: var(--chart-elevation-ref);
 }
-[data-theme='light'] .text-slate-700 {
-  color: var(--t6);
+.chart-avg-ref {
+  stroke: var(--chart-avg-ref);
 }
 
-[data-theme='light'] .border-white\/5 {
-  border-color: var(--line-soft);
+.chart-dot-total {
+  fill: var(--chart-total);
 }
-[data-theme='light'] .border-white\/10,
-[data-theme='light'] .border-white\/15,
-[data-theme='light'] .border-white\/20 {
-  border-color: var(--line);
+.chart-dot-weather {
+  fill: var(--chart-weather);
 }
-[data-theme='light'] .bg-white\/5 {
-  background-color: var(--fill);
+.chart-dot-route {
+  fill: var(--chart-route);
 }
-[data-theme='light'] .bg-white\/10 {
-  background-color: var(--fill-strong);
+.chart-dot-speed {
+  fill: var(--chart-weather);
 }
-
-[data-theme='light'] .bg-night-950,
-[data-theme='light'] .bg-night-950\/85 {
-  background-color: var(--page);
+.chart-dot-elevation {
+  fill: var(--chart-elevation);
 }
-[data-theme='light'] .bg-night-900,
-[data-theme='light'] .bg-night-900\/70,
-[data-theme='light'] .bg-night-900\/80 {
-  background-color: var(--surface);
+.chart-halo-total {
+  fill: var(--chart-total-soft);
 }
-[data-theme='light'] .bg-night-800,
-[data-theme='light'] .bg-night-800\/50,
-[data-theme='light'] .bg-night-800\/70 {
-  background-color: var(--surface-2);
+.chart-label-total {
+  fill: var(--chart-total-label);
 }
 
-/* 强调色:深色主题下用的浅色调在浅色背景上对比不足,换深色调 */
-[data-theme='light'] .text-sky-300,
-[data-theme='light'] .text-sky-300\/90 {
-  color: var(--accent-sky-text);
+/* 面积渐变:stop-color 是 CSS 属性,同样可用 class 驱动 */
+.chart-trend-area-top {
+  stop-color: var(--chart-area-top);
 }
-[data-theme='light'] .text-sky-400,
-[data-theme='light'] .text-sky-400\/80 {
-  color: var(--accent-sky);
+.chart-trend-area-bottom {
+  stop-color: var(--chart-area-bottom);
 }
-[data-theme='light'] .text-emerald-300 {
-  color: var(--accent-emerald-text);
+.chart-ele-area-top {
+  stop-color: var(--chart-elevation-area-top);
 }
-[data-theme='light'] .text-emerald-400 {
-  color: #059669;
+.chart-ele-area-bottom {
+  stop-color: var(--chart-elevation-area-bottom);
 }
-[data-theme='light'] .text-amber-300,
-[data-theme='light'] .text-amber-300\/90 {
-  color: var(--accent-amber-text);
+
+.chart-zone-excellent {
+  fill: var(--chart-zone-excellent);
 }
-[data-theme='light'] .text-amber-400 {
-  color: #d97706;
+.chart-zone-good {
+  fill: var(--chart-zone-good);
 }
-[data-theme='light'] .text-red-300,
-[data-theme='light'] .text-red-300\/90 {
-  color: var(--accent-red-text);
+.chart-zone-fair {
+  fill: var(--chart-zone-fair);
 }
-[data-theme='light'] .text-red-400 {
-  color: #dc2626;
+.chart-zone-poor {
+  fill: var(--chart-zone-poor);
 }
-[data-theme='light'] .fill-slate-500 {
-  fill: var(--t4);
+
+.chart-radar-shape {
+  fill: var(--chart-radar-fill);
+  stroke: var(--chart-radar-stroke);
 }
-[data-theme='light'] .fill-slate-400 {
-  fill: var(--t3);
+.chart-radar-dot {
+  fill: var(--chart-radar-stroke);
 }
-[data-theme='light'] .fill-amber-400\/80 {
-  fill: #b45309;
+
+/* 评分档位:环与文字同色,保证两套主题下都达到可读对比度 */
+.score-ring-excellent {
+  stroke: var(--score-excellent);
 }
-[data-theme='light'] .fill-sky-200 {
-  fill: #0369a1;
+.score-ring-good {
+  stroke: var(--score-good);
 }
-[data-theme='light'] .fill-sky-300 {
-  fill: #0284c7;
+.score-ring-fair {
+  stroke: var(--score-fair);
+}
+.score-ring-poor {
+  stroke: var(--score-poor);
+}
+.score-text-excellent {
+  color: var(--score-excellent);
+}
+.score-text-good {
+  color: var(--score-good);
+}
+.score-text-fair {
+  color: var(--score-fair);
+}
+.score-text-poor {
+  color: var(--score-poor);
 }

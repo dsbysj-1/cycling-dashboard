@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { memo, useMemo } from 'react'
 import { downsample, extent, monotonePath, niceTicks, scaleLinear } from '../utils/chartHelpers'
 
 interface Props {
@@ -10,7 +10,7 @@ const H = 220
 const PAD = { top: 14, right: 14, bottom: 26, left: 38 }
 
 /** 速度曲线:手写 SVG 折线图(仅展示,不参与评分) */
-export default function SpeedChart({ data }: Props) {
+function SpeedChart({ data }: Props) {
   const chart = useMemo(() => {
     // 无时间戳时所有速度为 0,此时没有可展示的速度信息
     const pts = data.filter((d) => Number.isFinite(d.speed) && d.speed > 0)
@@ -33,7 +33,7 @@ export default function SpeedChart({ data }: Props) {
 
   if (!chart) {
     return (
-      <div className="flex h-40 items-center justify-center text-sm text-slate-500">
+      <div className="flex h-40 items-center justify-center text-sm text-t4">
         暂无速度数据 — 导入带时间戳的 GPX 后自动生成
       </div>
     )
@@ -45,14 +45,14 @@ export default function SpeedChart({ data }: Props) {
       {chart.yTicks.map((t) => (
         <g key={t}>
           <line x1={PAD.left} x2={W - PAD.right} y1={chart.y(t)} y2={chart.y(t)} className="chart-grid" />
-          <text x={PAD.left - 6} y={chart.y(t)} textAnchor="end" dominantBaseline="middle" style={{ fontSize: 10 }} className="fill-slate-500">
+          <text x={PAD.left - 6} y={chart.y(t)} textAnchor="end" dominantBaseline="middle" style={{ fontSize: 10 }} className="fill-t4">
             {t}
           </text>
         </g>
       ))}
       {/* X 轴(距离 km) */}
       {chart.xTicks.map((t) => (
-        <text key={t} x={chart.x(t)} y={H - PAD.bottom + 14} textAnchor="middle" style={{ fontSize: 10 }} className="fill-slate-500">
+        <text key={t} x={chart.x(t)} y={H - PAD.bottom + 14} textAnchor="middle" style={{ fontSize: 10 }} className="fill-t4">
           {t}
         </text>
       ))}
@@ -62,20 +62,23 @@ export default function SpeedChart({ data }: Props) {
         x2={W - PAD.right}
         y1={chart.y(chart.avg)}
         y2={chart.y(chart.avg)}
-        stroke="rgba(251,191,36,0.5)"
+        className="chart-avg-ref"
         strokeDasharray="4 4"
       />
-      <text x={W - PAD.right} y={chart.y(chart.avg) - 5} textAnchor="end" style={{ fontSize: 10 }} className="fill-amber-400/80">
+      <text x={W - PAD.right} y={chart.y(chart.avg) - 5} textAnchor="end" style={{ fontSize: 10 }} className="fill-accent-amber">
         均速 {chart.avg.toFixed(1)} km/h
       </text>
       {/* 速度曲线:单调插值,陡变处不会冲出图表区域 */}
-      <path d={monotonePath(chart.coords)} fill="none" stroke="#34d399" strokeWidth="2" strokeLinecap="round" />
+      <path d={monotonePath(chart.coords)} fill="none" className="chart-speed" strokeWidth="2" strokeLinecap="round" />
       {chart.coords.length > 0 && (
-        <circle cx={chart.coords[chart.coords.length - 1][0]} cy={chart.coords[chart.coords.length - 1][1]} r="3" fill="#34d399" />
+        <circle cx={chart.coords[chart.coords.length - 1][0]} cy={chart.coords[chart.coords.length - 1][1]} r="3" className="chart-dot-speed" />
       )}
-      <text x={PAD.left + 4} y={PAD.top + 2} style={{ fontSize: 10 }} className="fill-slate-500">
+      <text x={PAD.left + 4} y={PAD.top + 2} style={{ fontSize: 10 }} className="fill-t4">
         km/h
       </text>
     </svg>
   )
 }
+
+/** 该组件重渲染成本较高(图表计算 / 长列表),用 memo 避免父级状态变化时无谓重算 */
+export default memo(SpeedChart)

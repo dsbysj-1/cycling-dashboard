@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { radarVertex } from '../utils/chartHelpers'
 
 interface Props {
@@ -11,7 +12,7 @@ const RADIUS = 92
 const LEVELS = [0.25, 0.5, 0.75, 1]
 
 /** 三轴雷达图:天气适宜度 / 路线质量 / 骑行表现(已移除维度,留空展示) */
-export default function ScoreRadar({ weather, route }: Props) {
+function ScoreRadar({ weather, route }: Props) {
   const axes = [
     { label: '天气适宜度', value: weather / 100 },
     { label: '路线质量', value: route / 100 },
@@ -42,9 +43,9 @@ export default function ScoreRadar({ weather, route }: Props) {
       {/* 数据面:仅天气 + 路线两维 */}
       {dataVertices.length >= 2 && (
         <>
-          <polygon points={dataVertices.map((v) => v.join(',')).join(' ')} fill="rgba(56,189,248,0.25)" stroke="#38bdf8" strokeWidth="2" />
+          <polygon points={dataVertices.map((v) => v.join(',')).join(' ')} className="chart-radar-shape" strokeWidth="2" />
           {dataVertices.map((v, i) => (
-            <circle key={i} cx={v[0]} cy={v[1]} r="3.5" fill="#38bdf8" />
+            <circle key={i} cx={v[0]} cy={v[1]} r="3.5" className="chart-radar-dot" />
           ))}
         </>
       )}
@@ -59,7 +60,7 @@ export default function ScoreRadar({ weather, route }: Props) {
             y={y}
             textAnchor={anchor}
             dominantBaseline="middle"
-            className="fill-slate-300 text-[11px]"
+            className="fill-t2 text-[11px]"
             style={{ fontSize: 11 }}
           >
             {axis.label}
@@ -70,3 +71,6 @@ export default function ScoreRadar({ weather, route }: Props) {
     </svg>
   )
 }
+
+/** 该组件重渲染成本较高(图表计算 / 长列表),用 memo 避免父级状态变化时无谓重算 */
+export default memo(ScoreRadar)

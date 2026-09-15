@@ -1,5 +1,17 @@
 import type { TrackPoint } from '../types'
+import type {
+  AMapLngLatInput,
+  AMapNamespace,
+  AutoCompleteResult,
+  AutoCompleteTip,
+  GeocoderResult,
+  PlaceSearchPoi,
+  PlaceSearchResult,
+  RidingResult,
+  RidingRoute,
+} from '../types/amap'
 import { haversine } from '../utils/gpxParser'
+import { readLngLat } from '../utils/amapCoords'
 
 /**
  * 骑行路线自动规划:
@@ -48,31 +60,19 @@ export interface RouteCandidate {
   primary?: boolean
 }
 
-/** 高德 POI 坐标可能是 LngLat 实例,也可能是 [lng, lat] 数组 */
-function readLngLat(input: any): { lng: number; lat: number } | null {
-  if (!input) return null
-  if (Array.isArray(input)) {
-    const [lng, lat] = input
-    return Number.isFinite(lng) && Number.isFinite(lat) ? { lng, lat } : null
-  }
-  const lng = typeof input.getLng === 'function' ? input.getLng() : input.lng
-  const lat = typeof input.getLat === 'function' ? input.getLat() : input.lat
-  return Number.isFinite(lng) && Number.isFinite(lat) ? { lng, lat } : null
-}
-
 /** 从骑行规划结果中提取完整路径(拼接各段 path,去除连续重复点) */
-function extractPath(route: any): TrackPoint[] {
+function extractPath(route: RidingRoute): TrackPoint[] {
   const points: TrackPoint[] = []
-  const push = (raw: any) => {
+  const push = (raw: AMapLngLatInput) => {
     const ll = readLngLat(raw)
     if (!ll) return
     const last = points[points.length - 1]
     if (last && last.lat === ll.lat && last.lon === ll.lng) return
     points.push({ lat: ll.lat, lon: ll.lng })
   }
-  const rides: any[] = route?.rides ?? []
-  rides.forEach((step) => (step?.path ?? []).forEach(push))
-  if (points.length < 2) (route?.path ?? []).forEach(push)
+  const rides = route.rides ?? []
+  rides.forEach((step) => (step.path ?? []).forEach(push))
+  if (points.length < 2) (route.path ?? []).forEach(push)
   return points
 }
 
@@ -90,11 +90,11 @@ export interface ReverseGeocodeResult {
  * 起点由用户自由指定(定位/地图点选/搜索),不一定在表单所选城市内,
  * 因此需要用起点自身所在的城市去搜索目的地;同时这个地名会作为「起点位置」记录进历史。
  */
-export function reverseGeocode(AMap: any, origin: [number, number]): Promise<ReverseGeocodeResult | null> {
+export function reverseGeocode(AMap: AMapNamespace, origin: [number, number]): Promise<ReverseGeocodeResult | null> {
   return new Promise((resolve) => {
     const geocoder = new AMap.Geocoder({})
     const timer = setTimeout(() => resolve(null), 8000)
-    geocoder.getAddress(origin, (status: string, result: any) => {
+    geocoder.getAddress(origin, (status: string, result: GeocoderResult) => {
       clearTimeout(timer)
       const regeocode = result?.regeocode
       if (status !== 'complete' || !regeocode) {
@@ -122,14 +122,14 @@ export function reverseGeocode(AMap: any, origin: [number, number]): Promise<Rev
 }
 
 /** 反查起点所在城市的行政区划编码(adcode) */
-export async function resolveOriginAdcode(AMap: any, origin: [number, number]): Promise<string | null> {
+export async function resolveOriginAdcode(AMap: AMapNamespace, origin: [number, number]): Promise<string | null> {
   const result = await reverseGeocode(AMap, origin)
   return result?.adcode ?? null
 }
 
 /** 反查坐标对应的起点信息(地名 + 所在市区);失败时返回 null */
 export async function reverseGeocodePlace(
-  AMap: any,
+  AMap: AMapNamespace,
   origin: [number, number]
 ): Promise<{ name: string; district: string } | null> {
   const result = await reverseGeocode(AMap, origin)
@@ -146,7 +146,7 @@ export async function reverseGeocodePlace(
  * 城市编码由起点反查得到,因此起点可以在任意城市。
  */
 export function searchRideDestinations(
-  AMap: any,
+  AMap: AMapNamespace,
   origin: [number, number],
   adcode: string | null
 ): Promise<DestinationSuggestion[]> {
@@ -158,13 +158,13 @@ export function searchRideDestinations(
       const placeSearch = new AMap.PlaceSearch(options)
       const timer = setTimeout(() => reject(new Error('目的地搜索超时，请重试')), 15000)
 
-      const collect = (status: string, result: any) => {
+      const collect = (status: string, result: PlaceSearchResult) => {
         clearTimeout(timer)
         if (status !== 'complete') {
           reject(new Error(result?.info ?? '目的地搜索失败'))
           return
         }
-        const pois: any[] = result?.poiList?.pois ?? []
+        const pois: PlaceSearchPoi[] = result?.poiList?.pois ?? []
         const suggestions = pois
           .map((poi) => {
             const ll = readLngLat(poi.location)
@@ -221,14 +221,14 @@ export interface PlannedRoute {
 
 /** 骑行路径规划(真实路网) */
 export function planRideRoute(
-  AMap: any,
+  AMap: AMapNamespace,
   origin: [number, number],
   destination: [number, number]
 ): Promise<PlannedRoute> {
   return new Promise((resolve, reject) => {
     const riding = new AMap.Riding({ policy: 0 })
     const timer = setTimeout(() => reject(new Error('路线规划超时，请重试')), 15000)
-    riding.search(origin, destination, (status: string, result: any) => {
+    riding.search(origin, destination, (status: string, result: RidingResult) => {
       clearTimeout(timer)
       if (status !== 'complete') {
         reject(new Error(result?.info ?? '路线规划失败'))
@@ -268,7 +268,7 @@ const PLAN_INTERVAL_MS = 220
  * 指定目的地时:优先规划该目的地,再把周边目的地作为备选一起列出。
  */
 export async function buildRouteCandidates(
-  AMap: any,
+  AMap: AMapNamespace,
   origin: [number, number],
   options: RoutePlanningOptions = {}
 ): Promise<RouteCandidate[]> {
@@ -354,19 +354,19 @@ export async function buildRouteCandidates(
 }
 
 /** 目的地输入提示(高德 AutoComplete) */
-export function fetchPlaceTips(AMap: any, keyword: string, city: string): Promise<DestinationSuggestion[]> {
+export function fetchPlaceTips(AMap: AMapNamespace, keyword: string, city: string): Promise<DestinationSuggestion[]> {
   return new Promise((resolve) => {
     if (!keyword.trim()) {
       resolve([])
       return
     }
     const autoComplete = new AMap.AutoComplete({ city, citylimit: false })
-    autoComplete.search(keyword, (status: string, result: any) => {
+    autoComplete.search(keyword, (status: string, result: AutoCompleteResult) => {
       if (status !== 'complete') {
         resolve([])
         return
       }
-      const tips: any[] = result?.tips ?? []
+      const tips: AutoCompleteTip[] = result?.tips ?? []
       resolve(
         tips
           .map((tip) => {

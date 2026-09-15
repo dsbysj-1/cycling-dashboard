@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { memo, useState } from 'react'
 import { Bike as BikeIcon, Pencil, Plus, RefreshCcw, Trash2 } from 'lucide-react'
 import type { Bike, BikeCategoryId } from '../types'
 import { BIKE_CATEGORIES, TIRE_TYPES, findTireType } from '../types'
@@ -36,13 +36,13 @@ const emptyDraft = (): Draft => ({
 })
 
 const BAR_COLOR: Record<string, string> = {
-  ok: 'bg-emerald-400/80',
-  soon: 'bg-amber-400/90',
-  expired: 'bg-red-400/90',
+  ok: 'bg-accent-emerald/80',
+  soon: 'bg-accent-amber/90',
+  expired: 'bg-accent-red/90',
 }
 
 /** 单车与轮胎管理:类别、自定义名称、外胎类型与寿命跟踪(超期提醒检查外胎) */
-export default function ManageBikes({ bikes, onSave, onRemove }: Props) {
+function ManageBikes({ bikes, onSave, onRemove }: Props) {
   const [draft, setDraft] = useState<Draft | null>(null)
   const [error, setError] = useState('')
 
@@ -92,11 +92,11 @@ export default function ManageBikes({ bikes, onSave, onRemove }: Props) {
   return (
     <section className="card">
       <div className="mb-4 flex flex-wrap items-center gap-2">
-        <span className="flex items-center gap-2 text-sm font-semibold tracking-wide text-slate-300">
-          <BikeIcon className="h-4 w-4 text-sky-400" aria-hidden="true" />
+        <span className="flex items-center gap-2 text-sm font-semibold tracking-wide text-t2">
+          <BikeIcon className="h-4 w-4 text-accent-sky" aria-hidden="true" />
           单车与轮胎管理
         </span>
-        <span className="hidden text-[11px] text-slate-500 sm:inline">按该车累计里程跟踪外胎寿命，超期会提醒检查</span>
+        <span className="hidden text-[11px] text-t4 sm:inline">按该车累计里程跟踪外胎寿命，超期会提醒检查</span>
         {!draft && (
           <button type="button" className="btn-primary ml-auto !py-1.5" onClick={() => { setDraft(emptyDraft()); setError('') }}>
             <Plus className="h-4 w-4" aria-hidden="true" />
@@ -107,8 +107,8 @@ export default function ManageBikes({ bikes, onSave, onRemove }: Props) {
 
       {/* 新增/编辑表单 */}
       {draft && (
-        <div className="mb-4 space-y-3 rounded-xl border border-sky-400/20 bg-sky-400/5 p-4">
-          <div className="text-xs font-medium text-slate-300">{draft.id ? '编辑单车' : '添加单车'}</div>
+        <div className="mb-4 space-y-3 rounded-xl border border-accent-sky/20 bg-accent-sky/5 p-4">
+          <div className="text-xs font-medium text-t2">{draft.id ? '编辑单车' : '添加单车'}</div>
           <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
             <div>
               <label className="field-label">单车名称 *</label>
@@ -178,7 +178,7 @@ export default function ManageBikes({ bikes, onSave, onRemove }: Props) {
               />
             </div>
           </div>
-          {error && <p className="text-xs text-red-300">{error}</p>}
+          {error && <p className="text-xs text-accent-red-text">{error}</p>}
           <div className="flex gap-2">
             <button type="button" className="btn-primary" onClick={submit}>
               保存
@@ -192,7 +192,7 @@ export default function ManageBikes({ bikes, onSave, onRemove }: Props) {
 
       {/* 单车列表 */}
       {bikes.length === 0 && !draft ? (
-        <div className="flex h-24 items-center justify-center rounded-xl border border-dashed border-white/15 text-sm text-slate-500">
+        <div className="flex h-24 items-center justify-center rounded-xl border border-dashed border-line text-sm text-t4">
           还没有添加单车 — 添加后在记录骑行时可以选择单车，并跟踪外胎寿命
         </div>
       ) : (
@@ -200,7 +200,7 @@ export default function ManageBikes({ bikes, onSave, onRemove }: Props) {
           <div className="overflow-x-auto">
             <table className="w-full min-w-[820px] text-sm">
               <thead>
-                <tr className="border-b border-white/10 text-left text-xs text-slate-500">
+                <tr className="border-b border-line text-left text-xs text-t4">
                   <th className="px-3 py-2 font-medium">名称</th>
                   <th className="px-3 py-2 font-medium">类别</th>
                   <th className="px-3 py-2 font-medium">外胎</th>
@@ -223,25 +223,25 @@ export default function ManageBikes({ bikes, onSave, onRemove }: Props) {
                         ? `接近寿命，还剩 ${Math.round(tire!.remainingKm)} km`
                         : `还剩 ${Math.round(tire!.remainingKm)} km`
                   return (
-                    <tr key={b.id} className="border-b border-white/5">
-                      <td className="px-3 py-2.5 font-medium text-slate-100">{b.name}</td>
-                      <td className="px-3 py-2.5 text-slate-400">{BIKE_CATEGORIES[b.category]}</td>
-                      <td className="px-3 py-2.5 text-slate-400">
+                    <tr key={b.id} className="border-b border-line-soft">
+                      <td className="px-3 py-2.5 font-medium text-t1">{b.name}</td>
+                      <td className="px-3 py-2.5 text-t3">{BIKE_CATEGORIES[b.category]}</td>
+                      <td className="px-3 py-2.5 text-t3">
                         {findTireType(b.tireTypeId)?.name ?? '—'}
-                        <span className="ml-1 text-[10px] text-slate-500">装于 {b.tireInstalledAt}</span>
+                        <span className="ml-1 text-[10px] text-t4">装于 {b.tireInstalledAt}</span>
                       </td>
                       <td className="px-3 py-2.5 whitespace-nowrap">{b.totalKm} km</td>
-                      <td className="px-3 py-2.5 whitespace-nowrap text-slate-300">{b.rideCount} 次</td>
-                      <td className="px-3 py-2.5 whitespace-nowrap text-slate-400">{b.lastRideDate ?? '—'}</td>
+                      <td className="px-3 py-2.5 whitespace-nowrap text-t2">{b.rideCount} 次</td>
+                      <td className="px-3 py-2.5 whitespace-nowrap text-t3">{b.lastRideDate ?? '—'}</td>
                       <td className="px-3 py-2.5">
                         <div className="flex items-center gap-2">
-                          <span className="inline-block h-1.5 w-24 overflow-hidden rounded-full bg-white/10">
+                          <span className="inline-block h-1.5 w-24 overflow-hidden rounded-full bg-fill-strong">
                             <span
                               className={`block h-full rounded-full ${BAR_COLOR[level]}`}
                               style={{ width: `${Math.min(100, (tire?.ratio ?? 0) * 100)}%` }}
                             />
                           </span>
-                          <span className="whitespace-nowrap text-xs text-slate-400">
+                          <span className="whitespace-nowrap text-xs text-t3">
                             {Math.round(tire?.usedKm ?? 0)} / {tire?.lifeKm ?? '—'} km
                           </span>
                         </div>
@@ -250,10 +250,10 @@ export default function ManageBikes({ bikes, onSave, onRemove }: Props) {
                         <span
                           className={
                             level === 'expired'
-                              ? 'font-medium text-red-300'
+                              ? 'font-medium text-accent-red-text'
                               : level === 'soon'
-                                ? 'text-amber-300'
-                                : 'text-slate-400'
+                                ? 'text-accent-amber-text'
+                                : 'text-t3'
                           }
                         >
                           {statusText}
@@ -263,7 +263,7 @@ export default function ManageBikes({ bikes, onSave, onRemove }: Props) {
                         <div className="flex justify-end gap-1.5">
                           <button
                             type="button"
-                            className="rounded-md px-2 py-1 text-xs text-emerald-300 hover:bg-emerald-400/10"
+                            className="rounded-md px-2 py-1 text-xs text-accent-emerald-text hover:bg-accent-emerald/10"
                             title="把外胎安装里程重置为当前累计里程"
                             onClick={() => quickRetire(b)}
                           >
@@ -272,7 +272,7 @@ export default function ManageBikes({ bikes, onSave, onRemove }: Props) {
                           </button>
                           <button
                             type="button"
-                            className="rounded-md px-2 py-1 text-xs text-sky-300 hover:bg-sky-400/10"
+                            className="rounded-md px-2 py-1 text-xs text-accent-sky-text hover:bg-accent-sky/10"
                             onClick={() => startEdit(b)}
                           >
                             <Pencil className="mr-1 inline h-3 w-3" aria-hidden="true" />
@@ -280,7 +280,7 @@ export default function ManageBikes({ bikes, onSave, onRemove }: Props) {
                           </button>
                           <button
                             type="button"
-                            className="rounded-md px-2 py-1 text-xs text-red-300 hover:bg-red-400/10"
+                            className="rounded-md px-2 py-1 text-xs text-accent-red-text hover:bg-accent-red/10"
                             onClick={() => {
                               if (confirm(`删除单车「${b.name}」?\n历史骑行记录会保留，只是不再关联这辆车。`)) onRemove(b.id)
                             }}
@@ -301,3 +301,6 @@ export default function ManageBikes({ bikes, onSave, onRemove }: Props) {
     </section>
   )
 }
+
+/** 该组件重渲染成本较高(图表计算 / 长列表),用 memo 避免父级状态变化时无谓重算 */
+export default memo(ManageBikes)
