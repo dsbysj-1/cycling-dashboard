@@ -118,7 +118,11 @@ body {
   box-shadow: 0 0 0 2px rgb(56 189 248 / 0.2);
 }
 
-.btn {
+/* 按钮基类:所有变体共用(字号/字重/圆角/内边距一致,避免不同按钮字体不一样) */
+.btn,
+.btn-primary,
+.btn-ghost,
+.btn-danger {
   display: inline-flex;
   cursor: pointer;
   align-items: center;
@@ -127,10 +131,14 @@ body {
   border-radius: 0.5rem;
   padding: 0.5rem 1rem;
   font-size: 0.875rem;
+  line-height: 1.25rem;
   font-weight: 500;
   transition: background-color 0.15s, border-color 0.15s, color 0.15s;
 }
-.btn:disabled {
+.btn:disabled,
+.btn-primary:disabled,
+.btn-ghost:disabled,
+.btn-danger:disabled {
   cursor: not-allowed;
   opacity: 0.4;
 }
