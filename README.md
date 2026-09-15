@@ -12,7 +12,9 @@
 | **看板** | 评分趋势 + 速度曲线 + 海拔曲线 + 骑行轨迹地图 + 评分雷达 + 历史记录(筛选、编辑、重命名、导出 JSON / CSV) |
 | **单车与轮胎** | 单车与外胎寿命管理(标签上带记录条数角标,有外胎超期/接近寿命时显示红/黄点) |
 
-顶栏右侧有**明暗(昼夜)切换**按钮:深色(夜间)为默认主题,切换后整个界面(含高德地图底图与图表网格线)都会跟随,选择会记住在浏览器里。两套主题的文字对比度都做过量化校验。
+顶栏右侧有**明暗(昼夜)切换**按钮:深色(夜间)为默认主题,切换后整个界面(含高德地图底图、图表曲线与网格线)都会跟随,选择会记住在浏览器里。两套主题的文字对比度都做过量化校验。
+
+> 配色走的是**语义化 token**:组件里只写 `bg-surface` / `text-t2` / `border-line` / `text-accent-sky-text` 这类语义类,具体色值来自 `src/index.css` 的两套 CSS 变量。因此新增任何一处样式都会自动同时适配昼夜主题,不需要再为浅色模式单独维护一张类名覆盖表。SVG 因为展示属性不支持 `var()`,图表统一用 `.chart-*` / `.score-*` 类来驱动描边与填充(见「工程说明」)。
 
 ## 界面截图
 
@@ -97,16 +99,23 @@
   - **路线编号**:新建记录自动分配序号(1、2、3…),在历史列表里点编号即可重命名(回车确认、Esc 取消,重命名后不影响后续编号递增)
   - **目的地**:规划路线的目的地(或 GPX 轨迹名)独立成列,与路线编号区分
   - **起点位置**:规划路线时取用户选定的起点名(如「珠江新城(地铁站)」「我的位置」);导入 GPX 或手绘路线时由轨迹首个点逆地理编码得到地址;列表里按「市+区」显示(如「广州市天河区」),悬停可看完整地址与坐标。表单里两个字段都可在自动填入后手动修正,CSV 同样导出(含经纬度)
-- **健壮性**:全局错误边界(单个组件出错不会白屏,可一键恢复)、地图/天气/存储均有多级降级
-- **PWA**:已配置 manifest.json,可安装到桌面;Service Worker 按需求暂未启用(本地开发阶段),后续可通过 `npm run preview` 测试
+- **健壮性**:全局错误边界(单个组件出错不会白屏,可一键恢复)、地图/天气/存储均有多级降级;写入失败(如本地存储空间不足)会明确提示而不是静默丢数据
+- **PWA**:manifest 与 Service Worker 均已启用(`vite-plugin-pwa`),可安装到手机桌面并**离线打开查看已保存的历史记录**;包含 maskable 图标,安卓自适应图标裁切后不会丢边缘。生产构建后用 `npm run preview` 验证(Service Worker 需要 HTTPS 或 localhost)
+- **多标签页安全**:同一浏览器打开多个标签页时,任一页写入会通知其它页重新读取,不会出现「A 页看不到 B 页刚存的记录」或互相覆盖
+
+## 使用说明:分页与链接
+
+三个分页与地址栏 hash 同步(`#/record`、`#/dashboard`、`#/bikes`):刷新后停留在当前分页,链接可以直接分享或收藏。接安卓 App 后,系统返回键也会按这个历史记录后退,而不是直接退出应用。
 
 ## 本地运行
 
 ```bash
 npm install        # 安装依赖
 npm run dev        # 启动开发服务器,浏览器打开终端提示的地址(默认 http://localhost:5173)
-npm run build      # 生产构建(输出 dist/)
-npm run preview    # 预览生产构建
+npm test           # 运行单元测试(评分算法 / GPX 解析 / 外胎寿命 / 备份校验 / 图表辅助函数)
+npm run build      # 生产构建(输出 dist/),同时生成 Service Worker
+npm run preview    # 预览生产构建(PWA 与离线能力需在此模式下验证)
+npm run lint       # ESLint 检查
 ```
 
 > Node 版本要求:18+。
@@ -173,33 +182,56 @@ VITE_AMAP_SECURITY_CODE=你的安全密钥jscode
 ## 技术栈
 
 - React 18 + Vite 5 + TypeScript
-- Tailwind CSS 3
+- Tailwind CSS 3(配色全部走语义化 token,昼夜两套值由 CSS 变量提供)
 - 高德地图 JS API 2.0(`@amap/amap-jsapi-loader`)
 - 手写 SVG 图表(折线 / 面积 / 雷达 / 柱状,未使用图表库)
-- IndexedDB(Promise 封装 + localStorage 降级)
+- IndexedDB(Promise 封装 + localStorage 降级 + 跨标签页同步)
+- `vite-plugin-pwa`(Workbox 生成 Service Worker 与 manifest)
+- Vitest + jsdom(单元测试)
 - Open-Meteo / sojson 免费 API
+
+## 工程说明
+
+几个容易被忽略但影响长期维护的实现约定:
+
+- **主题 token**:`src/index.css` 定义 `--page/--surface/--t1…--t6/--line/--fill/--c-*-rgb` 三组变量,`tailwind.config.js` 把它们注册成颜色 token。带透明度的场景(`bg-surface/85`)要求变量是 RGB 三元组形式,所以底色类变量都存了三元组版本。
+- **图表配色**:SVG 的展示属性**不支持** `var()`,所以图表统一用 CSS 类声明描边与填充(`.chart-total` / `.chart-zone-good` / `.score-ring-excellent` 等,含渐变 `stop-color`)。高德 SDK 只接受颜色字符串,由 `src/utils/themeColors.ts` 在运行时读取主题变量。
+- **数据写入**:`useIndexedDB` 采用「乐观更新 + 失败回滚」——先就地更新本地状态(界面即时响应,不再整表重读),落库失败时提示原因并重新拉取真实数据。批量导入走单个事务,整体成功或整体回滚。
+- **备份校验**:导入前由 `src/utils/backup.ts` 逐条归一化,字段缺失按默认值补齐,彻底不可用的记录(缺 id、日期非法、结构错误)跳过并告知条数,脏数据不会进库。
+- **按需加载**:三个分页用 `React.lazy` 拆包,「看板」页(高德地图 + 四个图表)只在切换过去时才下载;`react` / `lucide-react` / `@amap` 单独分包以便长期缓存。
+- **高德 SDK 的类型边界**:官方没有 TS 类型,项目在 `src/types/amap.ts` 手写了「实际用到的子集」(地图、覆盖物、四个服务类与回调结果结构)。因此**全项目没有任何 `any`**,SDK 字段名写错或返回结构变化在编译期就会暴露;新增 API 时请在那里补声明,不要退回 `any`。坐标形态差异(数组 / 对象 / LngLat 实例)由 `src/utils/amapCoords.ts` 统一归一。
+- **表单结构**:`RideForm` 只做编排,状态与业务逻辑在 `src/components/ride-form/useRideForm.ts`,分区组件(基本信息 / 路线 / 路线属性 / 环境 / 保存)各自独立,便于单独调整;每个分区用 `Pick<RideFormModel, …>` 显式声明它依赖的字段。
+- **测试**:`src/utils/__tests__/` 共 6 个文件、107 个用例,覆盖评分规则(逐条对应上面的评分模型表格)、GPX 解析与距离/爬升计算、外胎寿命阈值、备份导入校验、图表辅助函数、高德坐标归一。**调整评分权重后请先跑 `npm test`。**
 
 ## 项目结构
 
 ```
 cycling-dashboard/
 ├── index.html
-├── public/               # manifest.json、图标(PWA)
+├── public/               # 图标(含 maskable 与 apple-touch-icon);manifest 由插件生成
 ├── src/
-│   ├── App.tsx           # 页面组装
+│   ├── App.tsx           # 顶栏 + 分页路由(hash 同步)+ 业务编排
 │   ├── types.ts          # 数据类型
+│   ├── types/amap.ts     # 高德 SDK 的最小类型声明(全项目无 any 的依据)
 │   ├── data/cities.ts    # 城市编码与坐标表
 │   ├── components/       # RideCheckIn(今日骑行打卡) / RideForm / RoutePlanner
 │   │                     # ManageBikes(单车与外胎寿命) / MapView
 │   │                     # HuaweiSyncButton / Toast
 │   │                     # ScoreCard / ScoreRadar / SpeedChart / ElevationChart
 │   │                     # HistoryList / TrendChart / ErrorBoundary
+│   │   ├── tabs/         # RecordTab / DashboardTab / BikesTab(按需加载)
+│   │   └── ride-form/    # useRideForm(状态与业务逻辑)
+│   │                     # BasicSection / RouteSection / RouteAttrSection / EnvSection / SubmitSection
 │   ├── hooks/            # useAmap(共享地图 SDK) / useRoutePlanning(路线规划)
 │   │                     # useHuaweiSync(手表同步状态)
 │   │                     # useIndexedDB(骑行记录 + 单车 + 打卡,IndexedDB v3)
-│   │                     # useWeather / useElevation
+│   │                     # useTabRoute(分页与 hash 同步)
+│   │                     # useWeather / useElevation / useTheme
 │   └── utils/            # scoring(评分算法) / gpxParser / chartHelpers / tire(外胎寿命)
+│                         # backup(备份校验与归一化) / amapCoords(坐标归一)
+│                         # themeColors(运行时取主题色)
 │                         # huaweiMock(手表数据 Mock 层,预留真实接口)
+│                         # __tests__/ 单元测试
 ├── .env                  # 高德 Key 配置
 └── package.json
 ```
