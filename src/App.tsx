@@ -251,18 +251,9 @@ export default function App() {
       </header>
 
       <main className="mx-auto max-w-7xl space-y-5 px-4 py-6 md:px-6">
-        {/* ===== 记录:今日打卡 + 录入 + 本次评分 ===== */}
+        {/* ===== 记录:今日打卡(嵌入)+ 录入表单 + 本次评分 ===== */}
         {tab === 'record' && (
           <>
-            <RideCheckIn
-              bikes={bikes}
-              days={days}
-              rides={rides}
-              onCheckIn={handleCheckIn}
-              onClearToday={handleClearToday}
-              onEditRide={startEdit}
-            />
-
             <div className="grid grid-cols-1 items-start gap-5 xl:grid-cols-12">
               <section className="card xl:col-span-7">
                 <div className="mb-4 flex items-center gap-2 text-sm font-semibold tracking-wide text-slate-300">
@@ -283,6 +274,18 @@ export default function App() {
                   bikes={bikes}
                   onSave={(r) => void handleSave(r)}
                   onCancelEdit={() => setEditing(null)}
+                  checkInSlot={
+                    editing ? undefined : (
+                      <RideCheckIn
+                        bikes={bikes}
+                        days={days}
+                        rides={rides}
+                        onCheckIn={handleCheckIn}
+                        onClearToday={handleClearToday}
+                        onEditRide={startEdit}
+                      />
+                    )
+                  }
                 />
               </section>
 

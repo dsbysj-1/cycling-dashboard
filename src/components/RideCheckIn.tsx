@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Bike as BikeIcon, CheckCircle2, Moon, Pencil } from 'lucide-react'
+import Toast, { type ToastMessage } from './Toast'
 import type { DayCheckIn, RideRecord } from '../types'
 import { BIKE_CATEGORIES } from '../types'
 import type { BikeWithStatus } from '../utils/tire'
@@ -51,6 +52,11 @@ export default function RideCheckIn({ bikes, days, rides, onCheckIn, onClearToda
   const [distance, setDistance] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
+  const [toast, setToast] = useState<ToastMessage | null>(null)
+
+  /** 上次骑过的单车(最近一条带单车的记录),作为默认选项 */
+  const lastBikeId = useMemo(() => rides.find((r) => r.bikeId)?.bikeId ?? '', [rides])
+  const defaultBikeId = lastBikeId && bikes.some((b) => b.id === lastBikeId) ? lastBikeId : ''
 
   /** 打卡生成的骑行记录(用于「补充详细数据」) */
   const checkInRide = useMemo(
@@ -74,7 +80,9 @@ export default function RideCheckIn({ bikes, days, rides, onCheckIn, onClearToda
       setError('请先选择今天是否骑行')
       return
     }
-    if (rode && !bikeId) {
+    // 未手动选择时用「上次骑过的车」兜底
+    const chosenBike = bikeId || defaultBikeId
+    if (rode && !chosenBike) {
       setError('请选择今天骑的是哪辆车')
       return
     }
@@ -84,8 +92,14 @@ export default function RideCheckIn({ bikes, days, rides, onCheckIn, onClearToda
       const km = parseFloat(distance)
       await onCheckIn({
         rode,
-        bikeId: rode ? bikeId : undefined,
+        bikeId: rode ? chosenBike : undefined,
         distanceKm: rode && Number.isFinite(km) && km > 0 ? km : undefined,
+      })
+      const bikeName = bikes.find((b) => b.id === chosenBike)?.name
+      setToast({
+        id: Date.now(),
+        type: rode ? 'success' : 'info',
+        message: rode ? `已记录今天的骑行${bikeName ? ' · ' + bikeName : ''}` : '已记录今天休息',
       })
       setRode(null)
       setBikeId('')
@@ -99,7 +113,7 @@ export default function RideCheckIn({ bikes, days, rides, onCheckIn, onClearToda
   if (todayEntry) {
     const bike = todayEntry.bikeId ? bikes.find((b) => b.id === todayEntry.bikeId) : null
     return (
-      <section className="card !py-4">
+      <div className="rounded-xl border border-sky-400/20 bg-sky-400/5 p-3">
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
           <span className="flex items-center gap-2 text-sm font-semibold tracking-wide text-slate-300">
             {todayEntry.rode ? (
@@ -107,7 +121,7 @@ export default function RideCheckIn({ bikes, days, rides, onCheckIn, onClearToda
             ) : (
               <Moon className="h-4 w-4 text-slate-400" aria-hidden="true" />
             )}
-            今日打卡 · {today}
+            今日已打卡 · {today}
           </span>
 
           {todayEntry.rode ? (
@@ -140,17 +154,18 @@ export default function RideCheckIn({ bikes, days, rides, onCheckIn, onClearToda
           </button>
         </div>
         <StatsLine stats={stats} />
-      </section>
+        {toast && <Toast toast={toast} onClose={() => setToast(null)} />}
+      </div>
     )
   }
 
   // 未打卡
   return (
-    <section className="card !py-4">
+    <div className="rounded-xl border border-sky-400/20 bg-sky-400/5 p-3">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
         <span className="flex items-center gap-2 text-sm font-semibold tracking-wide text-slate-300">
           <BikeIcon className="h-4 w-4 text-sky-400" aria-hidden="true" />
-          今日是否骑行 · {today}
+          今天是否骑行 · {today}
         </span>
 
         <div className="flex items-center gap-2">
@@ -178,7 +193,7 @@ export default function RideCheckIn({ bikes, days, rides, onCheckIn, onClearToda
 
         {rode === true && (
           <>
-            <select className="field-input !w-auto min-w-[170px]" value={bikeId} onChange={(e) => setBikeId(e.target.value)}>
+            <select className="field-input !w-auto min-w-[170px]" value={bikeId || defaultBikeId} onChange={(e) => setBikeId(e.target.value)}>
               <option value="">选择单车…</option>
               {bikes.map((b) => (
                 <option key={b.id} value={b.id}>
@@ -214,7 +229,8 @@ export default function RideCheckIn({ bikes, days, rides, onCheckIn, onClearToda
       {error && <p className="mt-2 text-xs text-red-300">{error}</p>}
 
       <StatsLine stats={stats} />
-    </section>
+      {toast && <Toast toast={toast} onClose={() => setToast(null)} />}
+    </div>
   )
 }
 

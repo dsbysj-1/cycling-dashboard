@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { useCallback, useMemo, useRef, useState, type ReactNode } from 'react'
 import type { EnvData, RideRecord, SurfaceType, TrafficLevel, TrackPoint } from '../types'
 import { SURFACE_LABELS, TRAFFIC_LABELS } from '../types'
 import { CITIES } from '../data/cities'
@@ -23,6 +23,8 @@ interface Props {
   onCancelEdit?: () => void
   /** 可选的单车列表(带外胎寿命状态) */
   bikes?: BikeWithStatus[]
+  /** 今日打卡区块(由父组件构造并注入,渲染在表单最上方) */
+  checkInSlot?: ReactNode
 }
 
 function todayLocal(): string {
@@ -41,7 +43,7 @@ const EMPTY_ENV: EnvData = {
 }
 
 /** 骑行数据录入:手动输入 + GPX 导入 + 地图绘制路线 + 环境数据采集(可手动修正) */
-export default function RideForm({ initialRecord, onSave, onCancelEdit, bikes = [] }: Props) {
+export default function RideForm({ initialRecord, onSave, onCancelEdit, bikes = [], checkInSlot }: Props) {
   const isEdit = initialRecord != null
   const [date, setDate] = useState(initialRecord?.date ?? todayLocal())
   const [bikeId, setBikeId] = useState(initialRecord?.bikeId ?? '')
@@ -391,6 +393,19 @@ export default function RideForm({ initialRecord, onSave, onCancelEdit, bikes = 
 
   return (
     <div className="space-y-5">
+      {/* 今日打卡(嵌入表单最上方,打卡与详细录入二选一) */}
+      {checkInSlot && (
+        <section>
+          <h3 className="card-title">✅ 今天骑了吗</h3>
+          {checkInSlot}
+          <div className="mt-4 flex items-center gap-3">
+            <span className="h-px flex-1 bg-white/10" aria-hidden="true" />
+            <span className="text-[11px] text-slate-500">或填写下面详细数据</span>
+            <span className="h-px flex-1 bg-white/10" aria-hidden="true" />
+          </div>
+        </section>
+      )}
+
       {/* 基本信息 */}
       <section>
         <h3 className="card-title">📋 基本信息</h3>
