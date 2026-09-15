@@ -18,12 +18,11 @@ import HistoryList from './components/HistoryList'
 import ManageBikes from './components/ManageBikes'
 import MapView from './components/MapView'
 
-type TabId = 'record' | 'dashboard' | 'history' | 'bikes'
+type TabId = 'record' | 'dashboard' | 'bikes'
 
 const TABS: { id: TabId; label: string }[] = [
   { id: 'record', label: '记录' },
   { id: 'dashboard', label: '看板' },
-  { id: 'history', label: '历史' },
   { id: 'bikes', label: '单车与轮胎' },
 ]
 
@@ -233,7 +232,7 @@ export default function App() {
                 }`}
               >
                 {t.label}
-                {t.id === 'history' && rides.length > 0 && (
+                {t.id === 'dashboard' && rides.length > 0 && (
                   <span className="ml-1.5 rounded-full bg-white/10 px-1.5 py-0.5 text-[10px] text-slate-400">{rides.length}</span>
                 )}
                 {t.id === 'bikes' && tireAlert && (
@@ -360,17 +359,18 @@ export default function App() {
                   </section>
                 </div>
 
-                {selected.track.length >= 2 && (
-                  <section className="card">
-                    <div className="mb-4 flex items-center gap-2 text-sm font-semibold tracking-wide text-slate-300">
-                      🗺️ 骑行轨迹 · {selected.date}
-                    </div>
-                    <MapView track={selected.track} />
-                  </section>
-                )}
+                {/* 轨迹地图与评分雷达并排(高度接近,雷达限制宽度避免撑满) */}
+                <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+                  {selected.track.length >= 2 && (
+                    <section className="card">
+                      <div className="mb-4 flex items-center gap-2 text-sm font-semibold tracking-wide text-slate-300">
+                        🗺️ 骑行轨迹 · {selected.date}
+                      </div>
+                      <MapView track={selected.track} />
+                    </section>
+                  )}
 
-                {selected.scores && (
-                  <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+                  {selected.scores && (
                     <section className="card">
                       <div className="mb-4 flex items-center gap-2 text-sm font-semibold tracking-wide text-slate-300">
                         🎯 评分雷达
@@ -378,12 +378,12 @@ export default function App() {
                           天气 {selected.scores.weather} · 路线 {selected.scores.route}
                         </span>
                       </div>
-                      <div className="flex justify-center">
+                      <div className="mx-auto w-full max-w-[320px]">
                         <ScoreRadar weather={selected.scores.weather} route={selected.scores.route} />
                       </div>
                     </section>
-                  </div>
-                )}
+                  )}
+                </div>
               </>
             ) : (
               <section className="card">
@@ -393,23 +393,24 @@ export default function App() {
                 </div>
               </section>
             )}
-          </>
-        )}
 
-        {/* ===== 历史 ===== */}
-        {tab === 'history' && (
-          <section className="card">
-            <div className="mb-4 flex items-center gap-2 text-sm font-semibold tracking-wide text-slate-300">🗂️ 历史记录</div>
-            <HistoryList
-              rides={rides}
-              bikes={bikes}
-              selectedId={selectedId}
-              onSelect={(id) => setSelectedId(id)}
-              onEdit={startEdit}
-              onDelete={(id) => void remove(id)}
-              onRename={(id, label) => void handleRename(id, label)}
-            />
-          </section>
+            {/* 历史记录(并入看板):筛选、编辑、重命名、导出 */}
+            <section className="card">
+              <div className="mb-4 flex flex-wrap items-center gap-2 text-sm font-semibold tracking-wide text-slate-300">
+                <span>🗂️ 历史记录</span>
+                {rides.length > 0 && <span className="text-xs font-normal text-slate-500">共 {rides.length} 条</span>}
+              </div>
+              <HistoryList
+                rides={rides}
+                bikes={bikes}
+                selectedId={selectedId}
+                onSelect={(id) => setSelectedId(id)}
+                onEdit={startEdit}
+                onDelete={(id) => void remove(id)}
+                onRename={(id, label) => void handleRename(id, label)}
+              />
+            </section>
+          </>
         )}
 
         {/* ===== 单车与轮胎 ===== */}
