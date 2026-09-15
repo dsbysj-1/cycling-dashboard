@@ -8,6 +8,8 @@ import { useWeather } from '../hooks/useWeather'
 import type { RouteCandidate } from '../hooks/useRoutePlanning'
 import { reverseGeocodePlace } from '../hooks/useRoutePlanning'
 import { useAmap } from '../hooks/useAmap'
+import type { BikeWithStatus } from '../utils/tire'
+import { BIKE_CATEGORIES } from '../types'
 import type { HuaweiRideMock } from '../utils/huaweiMock'
 import { buildComment, buildSuggestions, computeScores, rainLevelLabel } from '../utils/scoring'
 import MapView from './MapView'
@@ -19,6 +21,8 @@ interface Props {
   initialRecord?: RideRecord | null
   onSave: (record: RideRecord) => void
   onCancelEdit?: () => void
+  /** 可选的单车列表(带外胎寿命状态) */
+  bikes?: BikeWithStatus[]
 }
 
 function todayLocal(): string {
@@ -37,9 +41,10 @@ const EMPTY_ENV: EnvData = {
 }
 
 /** 骑行数据录入:手动输入 + GPX 导入 + 地图绘制路线 + 环境数据采集(可手动修正) */
-export default function RideForm({ initialRecord, onSave, onCancelEdit }: Props) {
+export default function RideForm({ initialRecord, onSave, onCancelEdit, bikes = [] }: Props) {
   const isEdit = initialRecord != null
   const [date, setDate] = useState(initialRecord?.date ?? todayLocal())
+  const [bikeId, setBikeId] = useState(initialRecord?.bikeId ?? '')
   const [cityName, setCityName] = useState(initialRecord?.cityName || '广州')
   const [customCode, setCustomCode] = useState(
     initialRecord && !CITIES.some((c) => c.name === initialRecord.cityName) ? initialRecord.cityCode : ''
@@ -96,6 +101,7 @@ export default function RideForm({ initialRecord, onSave, onCancelEdit }: Props)
 
   const city = CITIES.find((c) => c.name === cityName)
   const cityCode = customCode.trim() || city?.code || ''
+  const selectedBike = bikes.find((b) => b.id === bikeId) ?? null
   const location = useMemo(() => {
     if (track && track.length > 0) return { lat: track[0].lat, lon: track[0].lon }
     return city ? { lat: city.lat, lon: city.lon } : null
@@ -326,6 +332,7 @@ export default function RideForm({ initialRecord, onSave, onCancelEdit }: Props)
     const record: RideRecord = {
       id: initialRecord?.id ?? `ride_${now}_${Math.random().toString(36).slice(2, 8)}`,
       label: initialRecord?.label,
+      bikeId: bikeId || undefined,
       date,
       durationMin: durationMin ? parseFloat(durationMin) : null,
       distanceKm: Math.round(distance * 100) / 100,
@@ -349,6 +356,13 @@ export default function RideForm({ initialRecord, onSave, onCancelEdit }: Props)
       createdAt: initialRecord?.createdAt ?? now,
       updatedAt: now,
     }
+    // 保存时若所选单车的外胎已超期,提醒用户检查外胎状态
+    if (selectedBike?.tire?.level === 'expired') {
+      showToast(
+        `单车「${selectedBike.name}」的外胎已超过建议使用寿命,请注意检查外胎状态`,
+        'error'
+      )
+    }
     onSave(record)
     if (!isEdit) {
       // 新建保存后重置表单
@@ -368,6 +382,7 @@ export default function RideForm({ initialRecord, onSave, onCancelEdit }: Props)
       setEnv(EMPTY_ENV)
       setEnvMeta({ weatherFetched: false, aqiFetched: false, manualEdited: false })
       setNotes('')
+      setBikeId('')
     }
   }
 
@@ -431,6 +446,17 @@ export default function RideForm({ initialRecord, onSave, onCancelEdit }: Props)
             />
           </div>
           <div>
+            <label className="field-label">单车</label>
+            <select className="field-input" value={bikeId} onChange={(e) => setBikeId(e.target.value)}>
+              <option value="">未指定</option>
+              {bikes.map((b) => (
+                <option key={b.id} value={b.id}>
+                  {b.name}({BIKE_CATEGORIES[b.category]})
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
             <label className="field-label">距离 (km) *</label>
             <input type="number" min="0" step="0.1" className="field-input" value={distanceKm} onChange={(e) => setDistanceKm(e.target.value)} />
           </div>
@@ -447,6 +473,19 @@ export default function RideForm({ initialRecord, onSave, onCancelEdit }: Props)
             <input type="number" min="0" step="0.1" className="field-input" value={maxSpeed} onChange={(e) => setMaxSpeed(e.target.value)} />
           </div>
         </div>
+        {selectedBike?.tire?.level === 'expired' && (
+          <p className="mt-2 rounded-lg border border-red-400/30 bg-red-500/10 px-3 py-2 text-xs leading-5 text-red-300">
+            ⚠ 单车「{selectedBike.name}」的{selectedBike.tire.tireName}已超过建议使用寿命(已骑{' '}
+            {Math.round(selectedBike.tire.usedKm)} km / 建议 {selectedBike.tire.lifeKm} km,超期{' '}
+            {Math.round(Math.abs(selectedBike.tire.remainingKm))} km),请注意检查外胎状态,及时更换。
+          </p>
+        )}
+        {selectedBike?.tire?.level === 'soon' && (
+          <p className="mt-2 rounded-lg border border-amber-400/30 bg-amber-500/10 px-3 py-2 text-xs leading-5 text-amber-300">
+            单车「{selectedBike.name}」的{selectedBike.tire.tireName}接近建议寿命,还剩{' '}
+            {Math.round(selectedBike.tire.remainingKm)} km,请留意胎面磨损。
+          </p>
+        )}
       </section>
 
       {/* 华为手表数据同步 */}

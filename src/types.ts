@@ -65,10 +65,64 @@ export interface Scores {
   rainFactor: number
 }
 
+/* ---------------- 单车与轮胎 ---------------- */
+
+export type BikeCategoryId = 'road' | 'mtb' | 'gravel' | 'touring' | 'folding' | 'ebike' | 'other'
+
+export const BIKE_CATEGORIES: Record<BikeCategoryId, string> = {
+  road: '公路车',
+  mtb: '山地车',
+  gravel: '砾石车',
+  touring: '旅行/通勤车',
+  folding: '折叠车',
+  ebike: '电助力车',
+  other: '其他',
+}
+
+export interface TireTypeInfo {
+  id: string
+  name: string
+  /** 建议使用寿命(km):骑到该里程后建议检查/更换外胎 */
+  lifeKm: number
+}
+
+/** 轮胎类别与对应的固定建议寿命 */
+export const TIRE_TYPES: TireTypeInfo[] = [
+  { id: 'road-clincher', name: '公路开口胎', lifeKm: 5000 },
+  { id: 'road-race', name: '公路竞赛胎', lifeKm: 3000 },
+  { id: 'road-tubeless', name: '公路真空胎', lifeKm: 5500 },
+  { id: 'mtb-trail', name: '山地外胎', lifeKm: 3500 },
+  { id: 'gravel', name: '砾石外胎', lifeKm: 4500 },
+  { id: 'touring', name: '旅行/通勤外胎', lifeKm: 8000 },
+]
+
+export function findTireType(id: string): TireTypeInfo | undefined {
+  return TIRE_TYPES.find((t) => t.id === id)
+}
+
+/** 单车 */
+export interface Bike {
+  id: string
+  /** 自定义单车名称 */
+  name: string
+  category: BikeCategoryId
+  /** 外胎类型(TIRE_TYPES 中的 id) */
+  tireTypeId: string
+  /** 外胎安装日期 YYYY-MM-DD */
+  tireInstalledAt: string
+  /** 安装该外胎时单车的累计里程(km),用于计算外胎磨损 */
+  tireStartKm: number
+  notes?: string
+  createdAt: number
+  updatedAt: number
+}
+
 export interface RideRecord {
   id: string
   /** 路线编号/名称:新建时默认给出序号(1、2、3…),可在历史列表里重命名 */
   label?: string
+  /** 本次骑行使用的单车(Bike 的 id);旧记录或未选择时为空 */
+  bikeId?: string
   /** 骑行日期 YYYY-MM-DD */
   date: string
   /** 时长,分钟 */

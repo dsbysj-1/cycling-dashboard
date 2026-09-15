@@ -1,10 +1,12 @@
 import { useMemo, useState } from 'react'
-import { MapPin, Pencil } from 'lucide-react'
-import type { RideRecord } from '../types'
+import { Bike as BikeIcon, MapPin, Pencil } from 'lucide-react'
+import type { Bike, RideRecord } from '../types'
 import { SURFACE_LABELS, TRAFFIC_LABELS } from '../types'
 
 interface Props {
   rides: RideRecord[]
+  /** 单车列表,用于在记录里显示单车名称 */
+  bikes: Bike[]
   selectedId: string | null
   onSelect: (id: string) => void
   onEdit: (record: RideRecord) => void
@@ -20,9 +22,9 @@ function exportJSON(records: RideRecord[]) {
 }
 
 /** 导出 CSV(扁平化关键字段) */
-function exportCSV(records: RideRecord[]) {
+function exportCSV(records: RideRecord[], bikeNames: Map<string, string>) {
   const header = [
-    '路线编号', '日期', '目的地', '起点位置', '起点所在区', '起点纬度', '起点经度', '城市',
+    '路线编号', '日期', '单车', '目的地', '起点位置', '起点所在区', '起点纬度', '起点经度', '城市',
     '距离km', '时长min', '均速kmh', '最高速kmh', '爬升m', '坡度%', '路面', '交通',
     '气温', '风力级', '湿度%', '降水mm', '降雨概率%', 'AQI', 'PM2.5', '综合分', '天气分', '路线分', '降雨指数', '备注',
   ]
@@ -32,8 +34,8 @@ function exportCSV(records: RideRecord[]) {
   }
   const rows = records.map((r) =>
     [
-      r.label ?? '', r.date, r.routeName ?? '', r.startName ?? '', r.startDistrict ?? '',
-      r.location?.lat ?? '', r.location?.lon ?? '', r.cityName,
+      r.label ?? '', r.date, (r.bikeId && bikeNames.get(r.bikeId)) || '', r.routeName ?? '', r.startName ?? '',
+      r.startDistrict ?? '', r.location?.lat ?? '', r.location?.lon ?? '', r.cityName,
       r.distanceKm, r.durationMin, r.avgSpeed, r.maxSpeed,
       r.route.elevationGain, r.route.avgGrade,
       r.route.surface ? SURFACE_LABELS[r.route.surface] : '',
@@ -57,12 +59,18 @@ function downloadBlob(blob: Blob, filename: string) {
 }
 
 /** 历史记录:筛选、查看、编辑、删除、导出;路线编号可在列表内重命名 */
-export default function HistoryList({ rides, selectedId, onSelect, onEdit, onDelete, onRename }: Props) {
+export default function HistoryList({ rides, bikes, selectedId, onSelect, onEdit, onDelete, onRename }: Props) {
   const [from, setFrom] = useState('')
   const [to, setTo] = useState('')
   /** 正在重命名的记录 id 与草稿值 */
   const [editingId, setEditingId] = useState<string | null>(null)
   const [draft, setDraft] = useState('')
+
+  const bikeNames = useMemo(() => {
+    const map = new Map<string, string>()
+    bikes.forEach((b) => map.set(b.id, b.name))
+    return map
+  }, [bikes])
 
   const filtered = useMemo(
     () => rides.filter((r) => (!from || r.date >= from) && (!to || r.date <= to)),
@@ -96,7 +104,7 @@ export default function HistoryList({ rides, selectedId, onSelect, onEdit, onDel
           <button type="button" className="btn-ghost" disabled={filtered.length === 0} onClick={() => exportJSON(filtered)}>
             导出 JSON
           </button>
-          <button type="button" className="btn-ghost" disabled={filtered.length === 0} onClick={() => exportCSV(filtered)}>
+          <button type="button" className="btn-ghost" disabled={filtered.length === 0} onClick={() => exportCSV(filtered, bikeNames)}>
             导出 CSV
           </button>
         </div>
@@ -113,6 +121,7 @@ export default function HistoryList({ rides, selectedId, onSelect, onEdit, onDel
               <tr className="border-b border-white/10 text-left text-xs text-slate-500">
                 <th className="px-3 py-2 font-medium">路线</th>
                 <th className="px-3 py-2 font-medium">日期</th>
+                <th className="px-3 py-2 font-medium">单车</th>
                 <th className="px-3 py-2 font-medium">目的地</th>
                 <th className="px-3 py-2 font-medium">起点位置</th>
                 <th className="px-3 py-2 font-medium">距离</th>
@@ -162,6 +171,16 @@ export default function HistoryList({ rides, selectedId, onSelect, onEdit, onDel
                     )}
                   </td>
                   <td className="px-3 py-2.5 whitespace-nowrap">{r.date}</td>
+                  <td className="max-w-[130px] truncate px-3 py-2.5 text-slate-300">
+                    {r.bikeId && bikeNames.has(r.bikeId) ? (
+                      <span className="inline-flex items-center gap-1">
+                        <BikeIcon className="h-3 w-3 shrink-0 text-sky-400/80" aria-hidden="true" />
+                        {bikeNames.get(r.bikeId)}
+                      </span>
+                    ) : (
+                      <span className="text-slate-600">—</span>
+                    )}
+                  </td>
                   <td className="max-w-[170px] truncate px-3 py-2.5 text-slate-300" title={r.routeName ?? undefined}>
                     {r.routeName || <span className="text-slate-600">—</span>}
                   </td>

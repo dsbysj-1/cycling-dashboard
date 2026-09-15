@@ -41,6 +41,23 @@
   - 带连接状态指示器(未连接 / 已连接 + 最近同步时间)与同步结果摘要
   - 同步中含 Loading 态(按钮禁用),成功/失败均有 Toast 提示(模拟 10% 失败以验证容错)
   - Health Kit 权限审核中,当前返回本地模拟数据,**不发起任何真实网络请求**;真实接口已在 `src/utils/huaweiMock.ts` 预留(`// TODO: 接入真实后端接口 /api/huawei/cycling-records`),替换函数体即可,调用方无需改动
+- **单车与轮胎管理**:管理多辆单车并跟踪外胎寿命
+  - 单车可**自定义名称**(如「小蓝」),并选择类别:公路车 / 山地车 / 砾石车 / 旅行通勤车 / 折叠车 / 电助力车 / 其他
+  - 每辆车可选择**外胎类型**,每类有固定的建议使用寿命:
+
+    | 外胎类型 | 建议寿命 |
+    |---|---|
+    | 公路开口胎 | 5000 km |
+    | 公路竞赛胎 | 3000 km |
+    | 公路真空胎 | 5500 km |
+    | 山地外胎 | 3500 km |
+    | 砾石外胎 | 4500 km |
+    | 旅行/通勤外胎 | 8000 km |
+
+  - 外胎磨损按「**该车所有骑行记录的距离之和** − 外胎安装时里程」计算,寿命条显示已骑/建议里程
+  - 达到 80% 提示「接近寿命」,**达到 100% 提示「已超期,请注意检查外胎状态」**——表单里选中该车时显示红色警告、保存记录时弹出提醒、管理列表中标注超期里程
+  - 支持「换胎」一键把外胎安装里程重置为当前累计里程
+  - 骑行记录可选择单车,历史列表与 CSV 导出都会带上单车名称
 - **环境数据采集**:Open-Meteo 获取气温/风速/湿度/降水量/降雨概率;空气质量控制 Open-Meteo Air Quality(sojson 备选);所有字段支持手动修正并标注来源
   - 近 92 天走预报接口、更早自动切历史归档接口(归档接口不含降雨概率,此时只用降水量估算并在界面说明)
   - GPX 带时间戳时,按骑行时段提取逐小时降雨(用接口返回的时区偏移对齐 UTC 时间戳,避免时区错位)
@@ -144,13 +161,14 @@ cycling-dashboard/
 │   ├── types.ts          # 数据类型
 │   ├── data/cities.ts    # 城市编码与坐标表
 │   ├── components/       # RideForm / RoutePlanner(自动路线规划) / MapView
-│   │                     # HuaweiSyncButton(手表同步) / Toast
+│   │                     # ManageBikes(单车与外胎寿命) / HuaweiSyncButton / Toast
 │   │                     # ScoreCard / ScoreRadar / SpeedChart / ElevationChart
 │   │                     # HistoryList / TrendChart / ErrorBoundary
 │   ├── hooks/            # useAmap(共享地图 SDK) / useRoutePlanning(路线规划)
 │   │                     # useHuaweiSync(手表同步状态)
-│   │                     # useIndexedDB / useWeather / useElevation
-│   └── utils/            # scoring(评分算法) / gpxParser / chartHelpers
+│   │                     # useIndexedDB(骑行记录 + 单车,IndexedDB v2)
+│   │                     # useWeather / useElevation
+│   └── utils/            # scoring(评分算法) / gpxParser / chartHelpers / tire(外胎寿命)
 │                         # huaweiMock(手表数据 Mock 层,预留真实接口)
 ├── .env                  # 高德 Key 配置
 └── package.json

@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
-import { MapPin } from 'lucide-react'
+import { MapPin, Bike as BikeIcon } from 'lucide-react'
 import type { RideRecord } from './types'
-import { useRides } from './hooks/useIndexedDB'
+import { useRides, useBikes } from './hooks/useIndexedDB'
+import { withTireStatus } from './utils/tire'
 import RideForm from './components/RideForm'
 import ScoreCard from './components/ScoreCard'
 import ScoreRadar from './components/ScoreRadar'
@@ -9,6 +10,7 @@ import SpeedChart from './components/SpeedChart'
 import ElevationChart from './components/ElevationChart'
 import TrendChart from './components/TrendChart'
 import HistoryList from './components/HistoryList'
+import ManageBikes from './components/ManageBikes'
 import MapView from './components/MapView'
 
 /** 生成下一条记录的路线编号:取现有数字编号最大值 +1,重命名过的非数字名称不参与 */
@@ -24,8 +26,12 @@ function nextRideLabel(rides: RideRecord[]): string {
 
 export default function App() {
   const { rides, loading, mode, save, remove } = useRides()
+  const { bikes: rawBikes, save: saveBike, remove: removeBike } = useBikes()
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [editing, setEditing] = useState<RideRecord | null>(null)
+
+  /** 单车列表附加上累计里程与外胎寿命状态 */
+  const bikes = useMemo(() => withTireStatus(rawBikes, rides), [rawBikes, rides])
 
   // 默认选中最新一条
   useEffect(() => {
@@ -35,6 +41,12 @@ export default function App() {
   }, [rides, selectedId])
 
   const selected = useMemo(() => rides.find((r) => r.id === selectedId) ?? null, [rides, selectedId])
+
+  /** 当前记录使用的单车名称 */
+  const selectedBikeName = useMemo(() => {
+    if (!selected?.bikeId) return null
+    return bikes.find((b) => b.id === selected.bikeId)?.name ?? null
+  }, [selected, bikes])
 
   const handleSave = async (record: RideRecord) => {
     // 新建记录没有编号时自动分配(1、2、3…),之后可在历史列表里重命名
@@ -92,6 +104,7 @@ export default function App() {
             <RideForm
               key={editing?.id ?? 'new'}
               initialRecord={editing}
+              bikes={bikes}
               onSave={(r) => void handleSave(r)}
               onCancelEdit={() => setEditing(null)}
             />
@@ -101,6 +114,14 @@ export default function App() {
             <div className="mb-4 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm font-semibold tracking-wide text-slate-300">
               <span>📊 本次评分{selected ? ` · ${selected.date}` : ''}</span>
               {selected?.routeName && <span className="text-xs font-normal text-slate-400">路线:{selected.routeName}</span>}
+              {selectedBikeName && (
+                <span className="flex items-center gap-1 text-xs font-normal text-sky-300/90">
+                  <BikeIcon className="h-3 w-3 shrink-0" aria-hidden="true" />
+                  <span className="truncate" title={selectedBikeName}>
+                    单车:{selectedBikeName}
+                  </span>
+                </span>
+              )}
               {selected?.startName && (
                 <span className="flex max-w-full items-center gap-1 text-xs font-normal text-amber-300/90">
                   <MapPin className="h-3 w-3 shrink-0" aria-hidden="true" />
@@ -161,6 +182,7 @@ export default function App() {
           <div className="mb-4 flex items-center gap-2 text-sm font-semibold tracking-wide text-slate-300">🗂️ 历史记录</div>
           <HistoryList
             rides={rides}
+            bikes={bikes}
             selectedId={selectedId}
             onSelect={setSelectedId}
             onEdit={(r) => {
@@ -171,6 +193,13 @@ export default function App() {
             onRename={(id, label) => void handleRename(id, label)}
           />
         </section>
+
+        {/* 单车与轮胎管理 */}
+        <ManageBikes
+          bikes={bikes}
+          onSave={(bike) => void saveBike(bike)}
+          onRemove={(id) => void removeBike(id)}
+        />
 
         <footer className="space-y-2 pb-6 text-center text-[11px] text-slate-600">
           <p>天气与空气质量:Open-Meteo · 海拔:Open-Meteo Elevation · 地图与路线:高德 · 数据仅保存在本地浏览器</p>

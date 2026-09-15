@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useState } from 'react'
-import type { RideRecord } from '../types'
+import type { Bike, RideRecord } from '../types'
 
 const DB_NAME = 'cycling-dashboard'
-const DB_VERSION = 1
-const STORE_NAME = 'rides'
-const LS_KEY = 'cycling-dashboard:rides'
+const DB_VERSION = 2
+const RIDES_STORE = 'rides'
+const BIKES_STORE = 'bikes'
+const LS_RIDES = 'cycling-dashboard:rides'
+const LS_BIKES = 'cycling-dashboard:bikes'
 
 type StorageMode = 'indexeddb' | 'localstorage'
 
@@ -20,8 +22,11 @@ function openDB(): Promise<IDBDatabase> {
     const req = indexedDB.open(DB_NAME, DB_VERSION)
     req.onupgradeneeded = () => {
       const db = req.result
-      if (!db.objectStoreNames.contains(STORE_NAME)) {
-        db.createObjectStore(STORE_NAME, { keyPath: 'id' })
+      if (!db.objectStoreNames.contains(RIDES_STORE)) {
+        db.createObjectStore(RIDES_STORE, { keyPath: 'id' })
+      }
+      if (!db.objectStoreNames.contains(BIKES_STORE)) {
+        db.createObjectStore(BIKES_STORE, { keyPath: 'id' })
       }
     }
     req.onsuccess = () => resolve(req.result)
@@ -34,12 +39,12 @@ function openDB(): Promise<IDBDatabase> {
   return dbPromise
 }
 
-function tx<T>(mode: IDBTransactionMode, run: (store: IDBObjectStore) => IDBRequest<T>): Promise<T> {
+function tx<T>(storeName: string, mode: IDBTransactionMode, run: (store: IDBObjectStore) => IDBRequest<T>): Promise<T> {
   return openDB().then(
     (db) =>
       new Promise<T>((resolve, reject) => {
-        const transaction = db.transaction(STORE_NAME, mode)
-        const request = run(transaction.objectStore(STORE_NAME))
+        const transaction = db.transaction(storeName, mode)
+        const request = run(transaction.objectStore(storeName))
         request.onsuccess = () => resolve(request.result)
         request.onerror = () => reject(request.error ?? new Error('IndexedDB 操作失败'))
       })
@@ -48,101 +53,128 @@ function tx<T>(mode: IDBTransactionMode, run: (store: IDBObjectStore) => IDBRequ
 
 /* ---------------- localStorage 降级实现 ---------------- */
 
-function lsRead(): RideRecord[] {
+function lsRead<T>(key: string): T[] {
   try {
-    return JSON.parse(localStorage.getItem(LS_KEY) ?? '[]') as RideRecord[]
+    return JSON.parse(localStorage.getItem(key) ?? '[]') as T[]
   } catch {
     return []
   }
 }
 
-function lsWrite(records: RideRecord[]): void {
-  localStorage.setItem(LS_KEY, JSON.stringify(records))
+function lsWrite(key: string, items: unknown[]): void {
+  localStorage.setItem(key, JSON.stringify(items))
 }
 
 /* ---------------- 统一存储接口 ---------------- */
 
-export const ridesStore = {
-  async getAll(): Promise<RideRecord[]> {
-    if (dbPromise === null && typeof indexedDB !== 'undefined') openDB()
-    if (dbPromise) {
-      try {
-        const records = await tx<RideRecord[]>('readonly', (s) => s.getAll() as IDBRequest<RideRecord[]>)
-        return records.sort((a, b) => b.date.localeCompare(a.date) || b.createdAt - a.createdAt)
-      } catch {
-        // 打开/读写失败则降级
-        dbPromise = null
-      }
-    }
-    return lsRead().sort((a, b) => b.date.localeCompare(a.date) || b.createdAt - a.createdAt)
-  },
-
-  async put(record: RideRecord): Promise<void> {
-    if (dbPromise) {
-      try {
-        await tx('readwrite', (s) => s.put(record))
-        return
-      } catch {
-        dbPromise = null
-      }
-    }
-    const records = lsRead().filter((r) => r.id !== record.id)
-    records.push(record)
-    lsWrite(records)
-  },
-
-  async remove(id: string): Promise<void> {
-    if (dbPromise) {
-      try {
-        await tx('readwrite', (s) => s.delete(id))
-        return
-      } catch {
-        dbPromise = null
-      }
-    }
-    lsWrite(lsRead().filter((r) => r.id !== id))
-  },
+interface StoreApi<T extends { id: string }> {
+  getAll(): Promise<T[]>
+  put(item: T): Promise<void>
+  remove(id: string): Promise<void>
 }
 
-/**
- * 骑行记录存储 Hook:优先 IndexedDB,不可用时自动降级 localStorage。
- * 返回记录列表、加载状态与增删改方法。
- */
-export function useRides() {
-  const [rides, setRides] = useState<RideRecord[]>([])
+function makeStore<T extends { id: string }>(
+  storeName: string,
+  lsKey: string,
+  sortFn: (a: T, b: T) => number
+): StoreApi<T> {
+  return {
+    async getAll(): Promise<T[]> {
+      if (dbPromise === null && typeof indexedDB !== 'undefined') openDB()
+      if (dbPromise) {
+        try {
+          const items = await tx<T[]>(storeName, 'readonly', (s) => s.getAll() as IDBRequest<T[]>)
+          return items.sort(sortFn)
+        } catch {
+          // 打开/读写失败则降级
+          dbPromise = null
+        }
+      }
+      return lsRead<T>(lsKey).sort(sortFn)
+    },
+
+    async put(item: T): Promise<void> {
+      if (dbPromise) {
+        try {
+          await tx(storeName, 'readwrite', (s) => s.put(item))
+          return
+        } catch {
+          dbPromise = null
+        }
+      }
+      const items = lsRead<T>(lsKey).filter((x) => x.id !== item.id)
+      items.push(item)
+      lsWrite(lsKey, items)
+    },
+
+    async remove(id: string): Promise<void> {
+      if (dbPromise) {
+        try {
+          await tx(storeName, 'readwrite', (s) => s.delete(id))
+          return
+        } catch {
+          dbPromise = null
+        }
+      }
+      lsWrite(lsKey, lsRead<T>(lsKey).filter((x) => x.id !== id))
+    },
+  }
+}
+
+const rideSort = (a: RideRecord, b: RideRecord) => b.date.localeCompare(a.date) || b.createdAt - a.createdAt
+const bikeSort = (a: Bike, b: Bike) => a.createdAt - b.createdAt
+
+export const ridesStore = makeStore<RideRecord>(RIDES_STORE, LS_RIDES, rideSort)
+export const bikesStore = makeStore<Bike>(BIKES_STORE, LS_BIKES, bikeSort)
+
+/* ---------------- React Hook ---------------- */
+
+function useCollection<T extends { id: string }>(store: StoreApi<T>) {
+  const [items, setItems] = useState<T[]>([])
   const [loading, setLoading] = useState(true)
   const [mode, setMode] = useState<StorageMode | null>(null)
 
   const refresh = useCallback(async () => {
     setLoading(true)
     try {
-      const all = await ridesStore.getAll()
-      setRides(all)
+      setItems(await store.getAll())
       setMode(dbPromise !== null ? 'indexeddb' : 'localstorage')
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [store])
 
   useEffect(() => {
     void refresh()
   }, [refresh])
 
   const save = useCallback(
-    async (record: RideRecord) => {
-      await ridesStore.put(record)
+    async (item: T) => {
+      await store.put(item)
       await refresh()
     },
-    [refresh]
+    [refresh, store]
   )
 
   const remove = useCallback(
     async (id: string) => {
-      await ridesStore.remove(id)
+      await store.remove(id)
       await refresh()
     },
-    [refresh]
+    [refresh, store]
   )
 
-  return { rides, loading, mode, save, remove, refresh }
+  return { items, loading, mode, save, remove, refresh }
+}
+
+/** 骑行记录存储:优先 IndexedDB,不可用时自动降级 localStorage */
+export function useRides() {
+  const { items, loading, mode, save, remove, refresh } = useCollection(ridesStore)
+  return { rides: items, loading, mode, save, remove, refresh }
+}
+
+/** 单车存储(与骑行记录同一个 IndexedDB 库,v2 新增 bikes 表) */
+export function useBikes() {
+  const { items, loading, mode, save, remove, refresh } = useCollection(bikesStore)
+  return { bikes: items, loading, mode, save, remove, refresh }
 }
