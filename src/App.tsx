@@ -14,6 +14,15 @@ import HistoryList from './components/HistoryList'
 import ManageBikes from './components/ManageBikes'
 import MapView from './components/MapView'
 
+type TabId = 'record' | 'dashboard' | 'history' | 'bikes'
+
+const TABS: { id: TabId; label: string }[] = [
+  { id: 'record', label: '记录' },
+  { id: 'dashboard', label: '看板' },
+  { id: 'history', label: '历史' },
+  { id: 'bikes', label: '单车与轮胎' },
+]
+
 /** 生成下一条记录的路线编号:取现有数字编号最大值 +1,重命名过的非数字名称不参与 */
 function nextRideLabel(rides: RideRecord[]): string {
   const nums = rides
@@ -31,6 +40,14 @@ export default function App() {
   const { days, save: saveDay, remove: removeDay } = useDays()
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [editing, setEditing] = useState<RideRecord | null>(null)
+  const [tab, setTab] = useState<TabId>('record')
+
+  /** 打开某条记录进行编辑(自动切回「记录」页) */
+  const startEdit = (record: RideRecord) => {
+    setEditing(record)
+    setTab('record')
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
 
   /** 单车列表附加上累计里程与外胎寿命状态 */
   const bikes = useMemo(() => withTireStatus(rawBikes, rides), [rawBikes, rides])
@@ -43,6 +60,14 @@ export default function App() {
   }, [rides, selectedId])
 
   const selected = useMemo(() => rides.find((r) => r.id === selectedId) ?? null, [rides, selectedId])
+
+  /** 外胎是否需要关注:超期(红)/接近寿命(琥珀),用于分页角标 */
+  const tireAlert = useMemo(() => {
+    const levels = bikes.map((b) => b.tire?.level).filter(Boolean)
+    if (levels.includes('expired')) return 'expired' as const
+    if (levels.includes('soon')) return 'soon' as const
+    return null
+  }, [bikes])
 
   /** 当前记录使用的单车名称 */
   const selectedBikeName = useMemo(() => {
@@ -173,132 +198,183 @@ export default function App() {
             )}
           </div>
         </div>
+
+        {/* 分页导航:把长页面拆成四块,每屏只显示相关内容 */}
+        <nav className="mx-auto flex max-w-7xl gap-1 overflow-x-auto px-4 md:px-6">
+          {TABS.map((t) => {
+            const active = tab === t.id
+            return (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => setTab(t.id)}
+                className={`relative whitespace-nowrap rounded-t-lg px-4 py-2 text-sm transition ${
+                  active ? 'font-medium text-sky-300' : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                {t.label}
+                {t.id === 'history' && rides.length > 0 && (
+                  <span className="ml-1.5 rounded-full bg-white/10 px-1.5 py-0.5 text-[10px] text-slate-400">{rides.length}</span>
+                )}
+                {t.id === 'bikes' && tireAlert && (
+                  <span
+                    className={`ml-1.5 inline-block h-1.5 w-1.5 rounded-full ${
+                      tireAlert === 'expired' ? 'bg-red-400' : 'bg-amber-400'
+                    }`}
+                    title={tireAlert === 'expired' ? '有外胎超过建议寿命' : '有外胎接近寿命'}
+                  />
+                )}
+                {active && <span className="absolute inset-x-2 bottom-0 h-0.5 rounded-full bg-sky-400" />}
+              </button>
+            )
+          })}
+        </nav>
       </header>
 
       <main className="mx-auto max-w-7xl space-y-5 px-4 py-6 md:px-6">
-        {/* 今日骑行打卡 */}
-        <RideCheckIn
-          bikes={bikes}
-          days={days}
-          rides={rides}
-          onCheckIn={handleCheckIn}
-          onClearToday={handleClearToday}
-          onEditRide={(r) => {
-            setEditing(r)
-            window.scrollTo({ top: 0, behavior: 'smooth' })
-          }}
-        />
-
-        {/* 录入 + 当前评分 */}
-        <div className="grid grid-cols-1 gap-5 xl:grid-cols-12">
-          <section className="card xl:col-span-7">
-            <div className="mb-4 flex items-center gap-2 text-sm font-semibold tracking-wide text-slate-300">
-              {editing ? '✏️ 编辑骑行记录' : '➕ 记录一次骑行'}
-              {editing && (
-                <button type="button" className="ml-auto text-xs font-normal text-slate-400 hover:text-slate-200" onClick={() => setEditing(null)}>
-                  取消编辑
-                </button>
-              )}
-            </div>
-            <RideForm
-              key={editing?.id ?? 'new'}
-              initialRecord={editing}
+        {/* ===== 记录:今日打卡 + 录入 + 本次评分 ===== */}
+        {tab === 'record' && (
+          <>
+            <RideCheckIn
               bikes={bikes}
-              onSave={(r) => void handleSave(r)}
-              onCancelEdit={() => setEditing(null)}
+              days={days}
+              rides={rides}
+              onCheckIn={handleCheckIn}
+              onClearToday={handleClearToday}
+              onEditRide={startEdit}
+            />
+
+            <div className="grid grid-cols-1 gap-5 xl:grid-cols-12">
+              <section className="card xl:col-span-7">
+                <div className="mb-4 flex items-center gap-2 text-sm font-semibold tracking-wide text-slate-300">
+                  {editing ? '✏️ 编辑骑行记录' : '➕ 记录一次骑行'}
+                  {editing && (
+                    <button
+                      type="button"
+                      className="ml-auto text-xs font-normal text-slate-400 hover:text-slate-200"
+                      onClick={() => setEditing(null)}
+                    >
+                      取消编辑
+                    </button>
+                  )}
+                </div>
+                <RideForm
+                  key={editing?.id ?? 'new'}
+                  initialRecord={editing}
+                  bikes={bikes}
+                  onSave={(r) => void handleSave(r)}
+                  onCancelEdit={() => setEditing(null)}
+                />
+              </section>
+
+              <section className="card xl:col-span-5">
+                <div className="mb-4 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm font-semibold tracking-wide text-slate-300">
+                  <span>📊 本次评分{selected ? ` · ${selected.date}` : ''}</span>
+                  {selected?.routeName && <span className="text-xs font-normal text-slate-400">路线:{selected.routeName}</span>}
+                  {selectedBikeName && (
+                    <span className="flex items-center gap-1 text-xs font-normal text-sky-300/90">
+                      <BikeIcon className="h-3 w-3 shrink-0" aria-hidden="true" />
+                      <span className="truncate" title={selectedBikeName}>
+                        单车:{selectedBikeName}
+                      </span>
+                    </span>
+                  )}
+                  {selected?.startName && (
+                    <span className="flex max-w-full items-center gap-1 text-xs font-normal text-amber-300/90">
+                      <MapPin className="h-3 w-3 shrink-0" aria-hidden="true" />
+                      <span className="truncate" title={selected.startName}>
+                        起点:{selected.startName}
+                      </span>
+                    </span>
+                  )}
+                </div>
+                {selected ? (
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <ScoreCard record={selected} />
+                    <div className="flex items-center justify-center">
+                      <ScoreRadar weather={selected.scores?.weather ?? 0} route={selected.scores?.route ?? 0} />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex h-64 flex-col items-center justify-center gap-2 text-sm text-slate-500">
+                    <span className="text-3xl">🚴‍♂️</span>
+                    <p>还没有骑行记录</p>
+                    <p className="text-xs">在左侧录入数据、导入 GPX 或绘制路线后保存,即可看到评分</p>
+                  </div>
+                )}
+              </section>
+            </div>
+          </>
+        )}
+
+        {/* ===== 看板:图表 + 地图 + 趋势 ===== */}
+        {tab === 'dashboard' && (
+          <>
+            <section className="card">
+              <div className="mb-4 flex items-center gap-2 text-sm font-semibold tracking-wide text-slate-300">
+                📈 评分趋势(最近 10 次)
+              </div>
+              <TrendChart rides={rides} />
+            </section>
+
+            {selected ? (
+              <>
+                <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+                  <section className="card">
+                    <div className="mb-4 flex items-center gap-2 text-sm font-semibold tracking-wide text-slate-300">
+                      ⚡ 速度曲线
+                      <span className="text-xs font-normal text-slate-500">{selected.date}</span>
+                    </div>
+                    <SpeedChart data={selected.speedSeries} />
+                  </section>
+                  <section className="card">
+                    <div className="mb-4 flex items-center gap-2 text-sm font-semibold tracking-wide text-slate-300">
+                      ⛰️ 海拔曲线
+                    </div>
+                    <ElevationChart track={selected.track} />
+                  </section>
+                </div>
+
+                {selected.track.length >= 2 && (
+                  <section className="card">
+                    <div className="mb-4 flex items-center gap-2 text-sm font-semibold tracking-wide text-slate-300">
+                      🗺️ 骑行轨迹 · {selected.date}
+                    </div>
+                    <MapView track={selected.track} />
+                  </section>
+                )}
+              </>
+            ) : (
+              <section className="card">
+                <div className="flex h-40 flex-col items-center justify-center gap-2 text-sm text-slate-500">
+                  <p>还没有骑行记录</p>
+                  <p className="text-xs">保存记录后,这里会显示速度曲线、海拔曲线与骑行轨迹地图</p>
+                </div>
+              </section>
+            )}
+          </>
+        )}
+
+        {/* ===== 历史 ===== */}
+        {tab === 'history' && (
+          <section className="card">
+            <div className="mb-4 flex items-center gap-2 text-sm font-semibold tracking-wide text-slate-300">🗂️ 历史记录</div>
+            <HistoryList
+              rides={rides}
+              bikes={bikes}
+              selectedId={selectedId}
+              onSelect={(id) => setSelectedId(id)}
+              onEdit={startEdit}
+              onDelete={(id) => void remove(id)}
+              onRename={(id, label) => void handleRename(id, label)}
             />
           </section>
-
-          <section className="card xl:col-span-5">
-            <div className="mb-4 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm font-semibold tracking-wide text-slate-300">
-              <span>📊 本次评分{selected ? ` · ${selected.date}` : ''}</span>
-              {selected?.routeName && <span className="text-xs font-normal text-slate-400">路线:{selected.routeName}</span>}
-              {selectedBikeName && (
-                <span className="flex items-center gap-1 text-xs font-normal text-sky-300/90">
-                  <BikeIcon className="h-3 w-3 shrink-0" aria-hidden="true" />
-                  <span className="truncate" title={selectedBikeName}>
-                    单车:{selectedBikeName}
-                  </span>
-                </span>
-              )}
-              {selected?.startName && (
-                <span className="flex max-w-full items-center gap-1 text-xs font-normal text-amber-300/90">
-                  <MapPin className="h-3 w-3 shrink-0" aria-hidden="true" />
-                  <span className="truncate" title={selected.startName}>
-                    起点:{selected.startName}
-                  </span>
-                </span>
-              )}
-            </div>
-            {selected ? (
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <ScoreCard record={selected} />
-                <div className="flex items-center justify-center">
-                  <ScoreRadar weather={selected.scores?.weather ?? 0} route={selected.scores?.route ?? 0} />
-                </div>
-              </div>
-            ) : (
-              <div className="flex h-64 flex-col items-center justify-center gap-2 text-sm text-slate-500">
-                <span className="text-3xl">🚴‍♂️</span>
-                <p>还没有骑行记录</p>
-                <p className="text-xs">在左侧录入数据、导入 GPX 或绘制路线后保存,即可看到评分</p>
-              </div>
-            )}
-          </section>
-        </div>
-
-        {/* 图表区 */}
-        {selected && (
-          <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-            <section className="card">
-              <div className="mb-4 flex items-center gap-2 text-sm font-semibold tracking-wide text-slate-300">⚡ 速度曲线</div>
-              <SpeedChart data={selected.speedSeries} />
-            </section>
-            <section className="card">
-              <div className="mb-4 flex items-center gap-2 text-sm font-semibold tracking-wide text-slate-300">⛰️ 海拔曲线</div>
-              <ElevationChart track={selected.track} />
-            </section>
-          </div>
         )}
 
-        {/* 轨迹地图 */}
-        {selected && selected.track.length >= 2 && (
-          <section className="card">
-            <div className="mb-4 flex items-center gap-2 text-sm font-semibold tracking-wide text-slate-300">
-              🗺️ 骑行轨迹 · {selected.date}
-            </div>
-            <MapView track={selected.track} />
-          </section>
+        {/* ===== 单车与轮胎 ===== */}
+        {tab === 'bikes' && (
+          <ManageBikes bikes={bikes} onSave={(bike) => void saveBike(bike)} onRemove={(id) => void removeBike(id)} />
         )}
-
-        {/* 趋势 + 历史 */}
-        <section className="card">
-          <div className="mb-4 flex items-center gap-2 text-sm font-semibold tracking-wide text-slate-300">📈 评分趋势(最近 10 次)</div>
-          <TrendChart rides={rides} />
-        </section>
-
-        <section className="card">
-          <div className="mb-4 flex items-center gap-2 text-sm font-semibold tracking-wide text-slate-300">🗂️ 历史记录</div>
-          <HistoryList
-            rides={rides}
-            bikes={bikes}
-            selectedId={selectedId}
-            onSelect={setSelectedId}
-            onEdit={(r) => {
-              setEditing(r)
-              window.scrollTo({ top: 0, behavior: 'smooth' })
-            }}
-            onDelete={(id) => void remove(id)}
-            onRename={(id, label) => void handleRename(id, label)}
-          />
-        </section>
-
-        {/* 单车与轮胎管理 */}
-        <ManageBikes
-          bikes={bikes}
-          onSave={(bike) => void saveBike(bike)}
-          onRemove={(id) => void removeBike(id)}
-        />
 
         <footer className="space-y-2 pb-6 text-center text-[11px] text-slate-600">
           <p>天气与空气质量:Open-Meteo · 海拔:Open-Meteo Elevation · 地图与路线:高德 · 数据仅保存在本地浏览器</p>

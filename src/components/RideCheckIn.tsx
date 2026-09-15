@@ -204,8 +204,7 @@ export default function RideCheckIn({ bikes, days, rides, onCheckIn, onClearToda
       )}
       {rode === true && bikes.length > 0 && (
         <p className="mt-2 text-[11px] leading-5 text-slate-500">
-          打卡后会自动生成一条今天的骑行记录并关联所选单车:该车的累计里程、骑行次数与最近骑行日期会同步更新,外胎寿命随之计算。
-          距离可以先不填,之后点「补充详细数据」再把距离、天气等补全。
+          打卡会生成今天的骑行记录并关联该车(同步累计里程、骑行次数与外胎寿命);距离可留空,之后点「补充详细数据」补全。
         </p>
       )}
       {error && <p className="mt-2 text-xs text-red-300">{error}</p>}

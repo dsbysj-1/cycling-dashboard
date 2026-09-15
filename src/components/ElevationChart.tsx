@@ -1,8 +1,8 @@
 import { useMemo } from 'react'
 import type { TrackPoint } from '../types'
-import { downsample, extent, niceTicks, scaleLinear, smoothLinePath } from '../utils/chartHelpers'
+import { downsample, extent, niceTicks, scaleLinear } from '../utils/chartHelpers'
+import { monotoneAreaPath, monotonePath } from '../utils/chartHelpers'
 import { haversine } from '../utils/gpxParser'
-import { areaPath } from '../utils/chartHelpers'
 
 interface Props {
   track: TrackPoint[]
@@ -10,12 +10,12 @@ interface Props {
 
 const W = 640
 const H = 220
-const PAD = { top: 14, right: 14, bottom: 26, left: 44 }
+const PAD = { top: 18, right: 14, bottom: 26, left: 44 }
 
-/** 海拔曲线:手写 SVG 面积图 */
+/** 海拔曲线:手写 SVG 面积图(单调插值,曲线不会溢出图表区域) */
 export default function ElevationChart({ track }: Props) {
   const chart = useMemo(() => {
-    const withEle = track.filter((p) => p.ele != null)
+    const withEle = track.filter((p) => p.ele != null && Number.isFinite(p.ele))
     if (withEle.length < 2) return null
     let cumulative = 0
     let prev: TrackPoint | null = null
@@ -26,23 +26,31 @@ export default function ElevationChart({ track }: Props) {
     })
     const sampled = downsample(series, 240)
     const [x0, x1] = extent(sampled.map((d) => d.distanceKm))
-    const [y0raw, y1raw] = extent(sampled.map((d) => d.ele))
-    const ySpan = Math.max(10, y1raw - y0raw)
-    const yTicks = niceTicks(y0raw - ySpan * 0.08, y1raw + ySpan * 0.08, 4)
-    if (yTicks.length < 2) return null
-    const yMin = yTicks[0]
-    const yMax = yTicks[yTicks.length - 1]
+    const [eleMin, eleMax] = extent(sampled.map((d) => d.ele))
+
+    // 纵轴范围:贴合实际海拔区间并留一点余量,不用从 0 起(海拔曲线看的是起伏)
+    const span = Math.max(10, eleMax - eleMin)
+    const pad = Math.max(2, span * 0.12)
+    const domainMin = eleMin - pad
+    const domainMax = eleMax + pad
+    // 比例尺用「数据范围」而非「第一个刻度」,否则低于首个刻度的海拔会被压平在图底
     const x = scaleLinear([x0, x1], [PAD.left, W - PAD.right])
-    const y = scaleLinear([yMin, yMax], [H - PAD.bottom, PAD.top])
+    const y = scaleLinear([domainMin, domainMax], [H - PAD.bottom, PAD.top])
+    // 刻度只用于画网格线与标注,过滤掉落在范围外的
+    const yTicks = niceTicks(domainMin, domainMax, 4).filter((t) => t >= domainMin && t <= domainMax)
+    if (yTicks.length < 2) return null
+
+    const coords = sampled.map((d) => [x(d.distanceKm), y(d.ele)] as [number, number])
     return {
-      coords: sampled.map((d) => [x(d.distanceKm), y(d.ele)] as [number, number]),
+      coords,
       xTicks: niceTicks(x0, x1, 6),
       yTicks,
       x,
       y,
       baseline: H - PAD.bottom,
-      minEle: y0raw,
-      maxEle: y1raw,
+      eleMin,
+      eleMax,
+      gain: Math.round(eleMax - eleMin),
     }
   }, [track])
 
@@ -69,17 +77,29 @@ export default function ElevationChart({ track }: Props) {
           {t}
         </text>
       ))}
-      {/* 海拔面积 */}
-      <path d={areaPath(chart.coords, chart.baseline)} fill="url(#eleGradient)" stroke="none" />
-      <path d={smoothLinePath(chart.coords)} fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" />
+      {/* 最高/最低海拔参考线 */}
+      <line
+        x1={PAD.left}
+        x2={W - PAD.right}
+        y1={chart.y(chart.eleMax)}
+        y2={chart.y(chart.eleMax)}
+        stroke="rgba(251,191,36,0.35)"
+        strokeDasharray="4 4"
+      />
+      <text x={W - PAD.right} y={chart.y(chart.eleMax) - 4} textAnchor="end" style={{ fontSize: 10 }} className="fill-amber-400/80">
+        最高 {Math.round(chart.eleMax)} m
+      </text>
+      {/* 海拔面积:描边与填充共用同一条单调曲线,不会错位 */}
+      <path d={monotoneAreaPath(chart.coords, chart.baseline)} fill="url(#eleGradient)" stroke="none" />
+      <path d={monotonePath(chart.coords)} fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" />
       <defs>
         <linearGradient id="eleGradient" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="rgba(245,158,11,0.45)" />
+          <stop offset="0%" stopColor="rgba(245,158,11,0.40)" />
           <stop offset="100%" stopColor="rgba(245,158,11,0.03)" />
         </linearGradient>
       </defs>
-      <text x={PAD.left + 4} y={PAD.top + 2} style={{ fontSize: 10 }} className="fill-slate-500">
-        m · 最高 {Math.round(chart.maxEle)}m / 最低 {Math.round(chart.minEle)}m
+      <text x={PAD.left + 4} y={PAD.top - 4} style={{ fontSize: 10 }} className="fill-slate-500">
+        m · 区间 {Math.round(chart.eleMin)}–{Math.round(chart.eleMax)} m(落差 {chart.gain} m)
       </text>
     </svg>
   )

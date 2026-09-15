@@ -497,8 +497,7 @@ export default function RideForm({ initialRecord, onSave, onCancelEdit, bikes = 
           onError={(msg) => showToast(msg, 'error')}
         />
         <p className="mt-2 text-[11px] leading-5 text-slate-500">
-          当前为本地模拟数据(Health Kit 权限审核中):同步后会填充距离、时长、平均速度、最高速度、累计爬升与备注,右侧评分预览会自动重算。
-          真实接口已在 <code className="text-slate-400">utils/huaweiMock.ts</code> 中预留。
+          当前为本地模拟数据(Health Kit 权限审核中),真实接口已在 <code className="text-slate-400">utils/huaweiMock.ts</code> 预留。
         </p>
       </section>
 

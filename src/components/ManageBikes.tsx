@@ -96,9 +96,7 @@ export default function ManageBikes({ bikes, onSave, onRemove }: Props) {
           <BikeIcon className="h-4 w-4 text-sky-400" aria-hidden="true" />
           单车与轮胎管理
         </span>
-        <span className="hidden text-[11px] text-slate-500 sm:inline">
-          外胎寿命为各类别的建议更换里程,超过后会提醒检查外胎状态
-        </span>
+        <span className="hidden text-[11px] text-slate-500 sm:inline">按该车累计里程跟踪外胎寿命,超期会提醒检查</span>
         {!draft && (
           <button type="button" className="btn-primary ml-auto !py-1.5" onClick={() => { setDraft(emptyDraft()); setError('') }}>
             <Plus className="h-4 w-4" aria-hidden="true" />

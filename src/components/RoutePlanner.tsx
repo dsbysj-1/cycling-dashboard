@@ -325,7 +325,7 @@ export default function RoutePlanner({
       {candidates.length > 0 && (
         <div className="space-y-2">
           <p className="text-xs text-slate-400">
-            共 {candidates.length} 条候选路线(真实路网规划),点击选择后会自动填入距离/时长并采集环境数据:
+            共 {candidates.length} 条候选路线,点击即自动填入数据并采集环境信息:
           </p>
           <ul className="grid gap-2 sm:grid-cols-2">
             {candidates.map((c) => {

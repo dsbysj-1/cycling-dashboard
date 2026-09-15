@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { downsample, extent, niceTicks, scaleLinear, smoothLinePath } from '../utils/chartHelpers'
+import { downsample, extent, monotonePath, niceTicks, scaleLinear } from '../utils/chartHelpers'
 
 interface Props {
   data: { distanceKm: number; speed: number }[]
@@ -19,15 +19,16 @@ export default function SpeedChart({ data }: Props) {
     const [x0, x1] = extent(sampled.map((d) => d.distanceKm))
     const [y0raw, y1raw] = extent(sampled.map((d) => d.speed))
     const yPad = Math.max(2, (y1raw - y0raw) * 0.08)
-    const yTicks = niceTicks(Math.max(0, y0raw - yPad), y1raw + yPad, 4)
-    if (yTicks.length < 2) return null
-    const yMin = yTicks[0]
-    const yMax = yTicks[yTicks.length - 1]
+    // 比例尺用「数据范围 ± 余量」,刻度仅用于网格线,避免最低值被压平在图底
+    const domainMin = Math.max(0, y0raw - yPad)
+    const domainMax = y1raw + yPad
     const x = scaleLinear([x0, x1], [PAD.left, W - PAD.right])
-    const y = scaleLinear([yMin, yMax], [H - PAD.bottom, PAD.top])
+    const y = scaleLinear([domainMin, domainMax], [H - PAD.bottom, PAD.top])
+    const yTicks = niceTicks(domainMin, domainMax, 4).filter((t) => t >= domainMin && t <= domainMax)
+    if (yTicks.length < 2) return null
     const coords = sampled.map((d) => [x(d.distanceKm), y(d.speed)] as [number, number])
     const avg = sampled.reduce((a, b) => a + b.speed, 0) / sampled.length
-    return { coords, xTicks: niceTicks(x0, x1, 6), yTicks, x, y, yMin, yMax, avg }
+    return { coords, xTicks: niceTicks(x0, x1, 6), yTicks, x, y, avg }
   }, [data])
 
   if (!chart) {
@@ -67,8 +68,8 @@ export default function SpeedChart({ data }: Props) {
       <text x={W - PAD.right} y={chart.y(chart.avg) - 5} textAnchor="end" style={{ fontSize: 10 }} className="fill-amber-400/80">
         均速 {chart.avg.toFixed(1)} km/h
       </text>
-      {/* 速度曲线 */}
-      <path d={smoothLinePath(chart.coords)} fill="none" stroke="#34d399" strokeWidth="2" strokeLinecap="round" />
+      {/* 速度曲线:单调插值,陡变处不会冲出图表区域 */}
+      <path d={monotonePath(chart.coords)} fill="none" stroke="#34d399" strokeWidth="2" strokeLinecap="round" />
       {chart.coords.length > 0 && (
         <circle cx={chart.coords[chart.coords.length - 1][0]} cy={chart.coords[chart.coords.length - 1][1]} r="3" fill="#34d399" />
       )}

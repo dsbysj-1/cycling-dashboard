@@ -46,22 +46,55 @@ export function areaPath(points: [number, number][], baseline: number): string {
   return `${linePath(points)} L${tail[0].toFixed(2)},${baseline.toFixed(2)} L${head[0].toFixed(2)},${baseline.toFixed(2)} Z`
 }
 
-/** 平滑曲线 path( Catmull-Rom 转 Bezier ),让曲线更接近主流图表观感 */
-export function smoothLinePath(points: [number, number][], tension = 0.5): string {
-  if (points.length < 3) return linePath(points)
-  let d = `M${points[0][0].toFixed(2)},${points[0][1].toFixed(2)}`
-  for (let i = 0; i < points.length - 1; i++) {
-    const p0 = points[i - 1] ?? points[i]
-    const p1 = points[i]
-    const p2 = points[i + 1]
-    const p3 = points[i + 2] ?? p2
-    const c1x = p1[0] + ((p2[0] - p0[0]) / 6) * tension * 2
-    const c1y = p1[1] + ((p2[1] - p0[1]) / 6) * tension * 2
-    const c2x = p2[0] - ((p3[0] - p1[0]) / 6) * tension * 2
-    const c2y = p2[1] - ((p3[1] - p1[1]) / 6) * tension * 2
-    d += ` C${c1x.toFixed(2)},${c1y.toFixed(2)} ${c2x.toFixed(2)},${c2y.toFixed(2)} ${p2[0].toFixed(2)},${p2[1].toFixed(2)}`
+/**
+ * 单调三次插值平滑(Fritsch–Carlson):曲线在数据点之间过渡自然,且**不会过冲**。
+ * Catmull-Rom 在陡升陡降处会"甩"出数据范围,导致海拔/速度曲线跑出图表框,
+ * 这里改用限幅后的节点导数,保证曲线始终落在相邻数据点的取值范围内。
+ */
+export function monotonePath(points: [number, number][]): string {
+  const n = points.length
+  if (n < 3) return linePath(points)
+
+  const xs = points.map((p) => p[0])
+  const ys = points.map((p) => p[1])
+  const dx: number[] = []
+  const slope: number[] = []
+  for (let i = 0; i < n - 1; i++) {
+    dx[i] = xs[i + 1] - xs[i]
+    slope[i] = dx[i] === 0 ? 0 : (ys[i + 1] - ys[i]) / dx[i]
+  }
+
+  // 节点导数:相邻割线异号(极值点)时取 0,同号时按加权调和平均限幅
+  const m: number[] = new Array(n)
+  m[0] = slope[0]
+  m[n - 1] = slope[n - 2]
+  for (let i = 1; i < n - 1; i++) {
+    if (slope[i - 1] * slope[i] <= 0) {
+      m[i] = 0
+    } else {
+      const w1 = 2 * dx[i] + dx[i - 1]
+      const w2 = dx[i] + 2 * dx[i - 1]
+      m[i] = (w1 + w2) / (w1 / slope[i - 1] + w2 / slope[i])
+    }
+  }
+
+  let d = `M${xs[0].toFixed(2)},${ys[0].toFixed(2)}`
+  for (let i = 0; i < n - 1; i++) {
+    const c1x = xs[i] + dx[i] / 3
+    const c1y = ys[i] + (m[i] * dx[i]) / 3
+    const c2x = xs[i + 1] - dx[i] / 3
+    const c2y = ys[i + 1] - (m[i + 1] * dx[i]) / 3
+    d += ` C${c1x.toFixed(2)},${c1y.toFixed(2)} ${c2x.toFixed(2)},${c2y.toFixed(2)} ${xs[i + 1].toFixed(2)},${ys[i + 1].toFixed(2)}`
   }
   return d
+}
+
+/** 面积图 path:用同一条单调曲线沿基线闭合,保证填充与描边完全重合 */
+export function monotoneAreaPath(points: [number, number][], baseline: number): string {
+  if (points.length === 0) return ''
+  const head = points[0]
+  const tail = points[points.length - 1]
+  return `${monotonePath(points)} L${tail[0].toFixed(2)},${baseline.toFixed(2)} L${head[0].toFixed(2)},${baseline.toFixed(2)} Z`
 }
 
 /** 雷达图顶点坐标:axisCount 条轴均匀分布,value 归一化 0–1 */
