@@ -11,6 +11,7 @@ import ScoreRadar from './components/ScoreRadar'
 import RouteReviews from './components/RouteReviews'
 import StatsOverview from './components/StatsOverview'
 import MaintenanceAlerts from './components/MaintenanceAlerts'
+import DataBackup, { type BackupPayload } from './components/DataBackup'
 import SpeedChart from './components/SpeedChart'
 import ElevationChart from './components/ElevationChart'
 import TrendChart from './components/TrendChart'
@@ -38,9 +39,9 @@ function nextRideLabel(rides: RideRecord[]): string {
 }
 
 export default function App() {
-  const { rides, loading, mode, save, remove } = useRides()
-  const { bikes: rawBikes, save: saveBike, remove: removeBike } = useBikes()
-  const { days, save: saveDay, remove: removeDay } = useDays()
+  const { rides, loading, mode, save, saveMany: saveManyRides, remove } = useRides()
+  const { bikes: rawBikes, save: saveBike, saveMany: saveManyBikes, remove: removeBike } = useBikes()
+  const { days, save: saveDay, saveMany: saveManyDays, remove: removeDay } = useDays()
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [editing, setEditing] = useState<RideRecord | null>(null)
   const [tab, setTab] = useState<TabId>('record')
@@ -173,6 +174,14 @@ export default function App() {
     if (!entry) return
     if (entry.rideId) await remove(entry.rideId)
     await removeDay(today)
+  }
+
+  /** 从备份文件恢复:合并写入(同 ID 覆盖) */
+  const handleImport = async (payload: BackupPayload) => {
+    await saveManyBikes(payload.bikes)
+    await saveManyDays(payload.days)
+    await saveManyRides(payload.rides)
+    return { rides: payload.rides.length, bikes: payload.bikes.length, days: payload.days.length }
   }
 
   /** 打卡后重新打卡一天,避免残留 */
@@ -413,6 +422,9 @@ export default function App() {
                 onRename={(id, label) => void handleRename(id, label)}
               />
             </section>
+
+            {/* 数据备份与恢复 */}
+            <DataBackup rides={rides} bikes={rawBikes} days={days} onImport={handleImport} />
           </>
         )}
 

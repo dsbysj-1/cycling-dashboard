@@ -164,6 +164,15 @@ function useCollection<T extends { id: string }>(store: StoreApi<T>) {
     [refresh, store]
   )
 
+  /** 批量写入(数据恢复用):写完后只刷新一次 */
+  const saveMany = useCallback(
+    async (items: T[]) => {
+      for (const item of items) await store.put(item)
+      await refresh()
+    },
+    [refresh, store]
+  )
+
   const remove = useCallback(
     async (id: string) => {
       await store.remove(id)
@@ -172,23 +181,23 @@ function useCollection<T extends { id: string }>(store: StoreApi<T>) {
     [refresh, store]
   )
 
-  return { items, loading, mode, save, remove, refresh }
+  return { items, loading, mode, save, saveMany, remove, refresh }
 }
 
 /** 骑行记录存储:优先 IndexedDB,不可用时自动降级 localStorage */
 export function useRides() {
-  const { items, loading, mode, save, remove, refresh } = useCollection(ridesStore)
-  return { rides: items, loading, mode, save, remove, refresh }
+  const { items, loading, mode, save, saveMany, remove, refresh } = useCollection(ridesStore)
+  return { rides: items, loading, mode, save, saveMany, remove, refresh }
 }
 
 /** 单车存储(与骑行记录同一个 IndexedDB 库,v2 新增 bikes 表) */
 export function useBikes() {
-  const { items, loading, mode, save, remove, refresh } = useCollection(bikesStore)
-  return { bikes: items, loading, mode, save, remove, refresh }
+  const { items, loading, mode, save, saveMany, remove, refresh } = useCollection(bikesStore)
+  return { bikes: items, loading, mode, save, saveMany, remove, refresh }
 }
 
 /** 每日骑行打卡存储(v3 新增 days 表) */
 export function useDays() {
-  const { items, loading, mode, save, remove, refresh } = useCollection(daysStore)
-  return { days: items, loading, mode, save, remove, refresh }
+  const { items, loading, mode, save, saveMany, remove, refresh } = useCollection(daysStore)
+  return { days: items, loading, mode, save, saveMany, remove, refresh }
 }
