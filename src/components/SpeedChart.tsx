@@ -44,7 +44,7 @@ export default function SpeedChart({ data }: Props) {
       {/* 网格与 Y 轴 */}
       {chart.yTicks.map((t) => (
         <g key={t}>
-          <line x1={PAD.left} x2={W - PAD.right} y1={chart.y(t)} y2={chart.y(t)} stroke="rgba(148,163,184,0.12)" />
+          <line x1={PAD.left} x2={W - PAD.right} y1={chart.y(t)} y2={chart.y(t)} className="chart-grid" />
           <text x={PAD.left - 6} y={chart.y(t)} textAnchor="end" dominantBaseline="middle" style={{ fontSize: 10 }} className="fill-slate-500">
             {t}
           </text>

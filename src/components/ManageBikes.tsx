@@ -228,7 +228,7 @@ export default function ManageBikes({ bikes, onSave, onRemove }: Props) {
                       <td className="px-3 py-2.5 text-slate-400">{BIKE_CATEGORIES[b.category]}</td>
                       <td className="px-3 py-2.5 text-slate-400">
                         {findTireType(b.tireTypeId)?.name ?? '—'}
-                        <span className="ml-1 text-[10px] text-slate-600">装于 {b.tireInstalledAt}</span>
+                        <span className="ml-1 text-[10px] text-slate-500">装于 {b.tireInstalledAt}</span>
                       </td>
                       <td className="px-3 py-2.5 whitespace-nowrap">{b.totalKm} km</td>
                       <td className="px-3 py-2.5 whitespace-nowrap text-slate-300">{b.rideCount} 次</td>

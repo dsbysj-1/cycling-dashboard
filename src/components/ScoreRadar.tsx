@@ -30,14 +30,14 @@ export default function ScoreRadar({ weather, route }: Props) {
           key={lv}
           points={axes.map((_, i) => radarVertex(CENTER, CENTER, RADIUS, axes.length, i, lv).join(',')).join(' ')}
           fill="none"
-          stroke="rgba(148,163,184,0.18)"
+          className="chart-grid"
           strokeWidth="1"
         />
       ))}
       {/* 轴线 */}
       {axes.map((_, i) => {
         const [x, y] = radarVertex(CENTER, CENTER, RADIUS, axes.length, i, 1)
-        return <line key={i} x1={CENTER} y1={CENTER} x2={x} y2={y} stroke="rgba(148,163,184,0.25)" strokeWidth="1" />
+        return <line key={i} x1={CENTER} y1={CENTER} x2={x} y2={y} className="chart-grid-strong" strokeWidth="1" />
       })}
       {/* 数据面:仅天气 + 路线两维 */}
       {dataVertices.length >= 2 && (

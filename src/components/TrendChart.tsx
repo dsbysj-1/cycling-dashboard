@@ -109,7 +109,7 @@ export default function TrendChart({ rides }: Props) {
         <LegendItem color={TOTAL_COLOR} thick label="综合评分" />
         <LegendItem color={WEATHER_COLOR} label="天气适宜度" />
         <LegendItem color={ROUTE_COLOR} label="路线质量" />
-        <span className="text-slate-600">纵轴固定 0–100,背景分区为评分档位</span>
+        <span className="text-slate-500">纵轴固定 0–100,背景分区为评分档位</span>
       </div>
 
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full" role="img" aria-label="评分趋势">
@@ -143,7 +143,7 @@ export default function TrendChart({ rides }: Props) {
               x2={W - PAD.right}
               y1={y(t)}
               y2={y(t)}
-              stroke="rgba(148,163,184,0.14)"
+              className="chart-grid"
               strokeDasharray={t === 0 ? undefined : '3 3'}
             />
             <text x={PAD.left - 6} y={y(t)} textAnchor="end" dominantBaseline="middle" style={{ fontSize: 10 }} className="fill-slate-500">

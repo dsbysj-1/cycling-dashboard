@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useState } from 'react'
-import { MapPin, Bike as BikeIcon } from 'lucide-react'
+import { MapPin, Bike as BikeIcon, Moon, Sun } from 'lucide-react'
 import type { RideRecord } from './types'
 import { useRides, useBikes, useDays } from './hooks/useIndexedDB'
+import { useTheme } from './hooks/useTheme'
 import { withTireStatus } from './utils/tire'
 import RideForm from './components/RideForm'
 import RideCheckIn from './components/RideCheckIn'
 import ScoreCard from './components/ScoreCard'
 import ScoreRadar from './components/ScoreRadar'
+import RouteReviews from './components/RouteReviews'
 import SpeedChart from './components/SpeedChart'
 import ElevationChart from './components/ElevationChart'
 import TrendChart from './components/TrendChart'
@@ -41,6 +43,7 @@ export default function App() {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [editing, setEditing] = useState<RideRecord | null>(null)
   const [tab, setTab] = useState<TabId>('record')
+  const { theme, toggle: toggleTheme } = useTheme()
 
   /** 打开某条记录进行编辑(自动切回「记录」页) */
   const startEdit = (record: RideRecord) => {
@@ -191,11 +194,26 @@ export default function App() {
             ) : (
               <>
                 <span className="hidden sm:inline">{rides.length} 条记录</span>
-                <span className="rounded-full border border-white/10 bg-white/5 px-2 py-0.5">
+                <span className="hidden rounded-full border border-white/10 bg-white/5 px-2 py-0.5 sm:inline">
                   {mode === 'indexeddb' ? 'IndexedDB' : mode === 'localstorage' ? 'localStorage(降级)' : '存储初始化中'}
                 </span>
               </>
             )}
+            {/* 明暗(昼夜)切换 */}
+            <button
+              type="button"
+              onClick={toggleTheme}
+              title={theme === 'dark' ? '切换到日间(浅色)模式' : '切换到夜间(深色)模式'}
+              aria-label={theme === 'dark' ? '切换到日间模式' : '切换到夜间模式'}
+              className="flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-slate-300 transition hover:bg-white/10"
+            >
+              {theme === 'dark' ? (
+                <Sun className="h-3.5 w-3.5 text-amber-300" aria-hidden="true" />
+              ) : (
+                <Moon className="h-3.5 w-3.5 text-sky-400" aria-hidden="true" />
+              )}
+              <span className="hidden sm:inline">{theme === 'dark' ? '日间' : '夜间'}</span>
+            </button>
           </div>
         </div>
 
@@ -289,12 +307,7 @@ export default function App() {
                   )}
                 </div>
                 {selected ? (
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    <ScoreCard record={selected} />
-                    <div className="flex items-center justify-center">
-                      <ScoreRadar weather={selected.scores?.weather ?? 0} route={selected.scores?.route ?? 0} />
-                    </div>
-                  </div>
+                  <ScoreCard record={selected} />
                 ) : (
                   <div className="flex h-64 flex-col items-center justify-center gap-2 text-sm text-slate-500">
                     <span className="text-3xl">🚴‍♂️</span>
@@ -303,6 +316,9 @@ export default function App() {
                   </div>
                 )}
               </section>
+
+              {/* 路线评价:自己在该路线上的历史统计 + 他人评价(预留) */}
+              <RouteReviews routeName={selected?.routeName} rides={rides} />
             </div>
           </>
         )}
@@ -343,6 +359,22 @@ export default function App() {
                     <MapView track={selected.track} />
                   </section>
                 )}
+
+                {selected.scores && (
+                  <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+                    <section className="card">
+                      <div className="mb-4 flex items-center gap-2 text-sm font-semibold tracking-wide text-slate-300">
+                        🎯 评分雷达
+                        <span className="text-xs font-normal text-slate-500">
+                          天气 {selected.scores.weather} · 路线 {selected.scores.route}
+                        </span>
+                      </div>
+                      <div className="flex justify-center">
+                        <ScoreRadar weather={selected.scores.weather} route={selected.scores.route} />
+                      </div>
+                    </section>
+                  </div>
+                )}
               </>
             ) : (
               <section className="card">
@@ -376,14 +408,14 @@ export default function App() {
           <ManageBikes bikes={bikes} onSave={(bike) => void saveBike(bike)} onRemove={(id) => void removeBike(id)} />
         )}
 
-        <footer className="space-y-2 pb-6 text-center text-[11px] text-slate-600">
+        <footer className="space-y-2 pb-6 text-center text-[11px] text-slate-500">
           <p>天气与空气质量:Open-Meteo · 海拔:Open-Meteo Elevation · 地图与路线:高德 · 数据仅保存在本地浏览器</p>
           <p>
-            <a className="transition hover:text-slate-400" href="./privacy.html" target="_blank" rel="noreferrer">
+            <a className="transition hover:text-slate-300" href="./privacy.html" target="_blank" rel="noreferrer">
               隐私政策
             </a>
-            <span className="mx-2 text-slate-700">·</span>
-            <a className="transition hover:text-slate-400" href="./terms.html" target="_blank" rel="noreferrer">
+            <span className="mx-2 text-slate-600">·</span>
+            <a className="transition hover:text-slate-300" href="./terms.html" target="_blank" rel="noreferrer">
               用户协议
             </a>
           </p>

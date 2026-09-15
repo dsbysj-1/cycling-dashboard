@@ -22,7 +22,7 @@ export default function ScoreCard({ record }: { record: RideRecord }) {
         {/* 综合评分环形 */}
         <div className="relative h-28 w-28 shrink-0">
           <svg viewBox="0 0 100 100" className="h-full w-full -rotate-90">
-            <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(148,163,184,0.15)" strokeWidth="10" />
+            <circle cx="50" cy="50" r="42" fill="none" className="chart-grid" strokeWidth="10" />
             <circle
               cx="50"
               cy="50"

@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { TrackPoint } from '../types'
 import { useAmap } from '../hooks/useAmap'
+import { useTheme } from '../hooks/useTheme'
 
 interface Props {
   track?: TrackPoint[] | null
@@ -33,6 +34,7 @@ export default function MapView({
   className,
 }: Props) {
   const { amap, status, error } = useAmap()
+  const { theme } = useTheme()
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<any>(null)
   const mouseToolRef = useRef<any>(null)
@@ -50,7 +52,7 @@ export default function MapView({
     const map = new amap.Map(containerRef.current, {
       center: [113.2644, 23.1291], // 默认广州
       zoom: 12,
-      mapStyle: 'amap://styles/dark',
+      mapStyle: theme === 'dark' ? 'amap://styles/dark' : 'amap://styles/normal',
       viewMode: '2D',
     })
     mapRef.current = map
@@ -60,7 +62,16 @@ export default function MapView({
       mapRef.current = null
       setMapReady(false)
     }
+    // 主题变化不重建地图,由下面的 effect 切换底图样式
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [amap])
+
+  // 昼夜切换:同步高德底图样式
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map || !mapReady) return
+    map.setMapStyle?.(theme === 'dark' ? 'amap://styles/dark' : 'amap://styles/normal')
+  }, [theme, mapReady])
 
   // 轨迹变化时重绘 polyline
   useEffect(() => {
