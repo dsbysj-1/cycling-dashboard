@@ -45,37 +45,48 @@ export default function RouteReviews({ routeName, rides }: Props) {
         <>
           {/* 自己的历史统计 */}
           {stats && (
-            <div className="mb-3 grid grid-cols-3 gap-2 text-center">
-              <div className="rounded-lg border border-white/10 bg-white/5 px-2 py-2">
-                <div className="text-lg font-semibold text-slate-100">{stats.count}</div>
-                <div className="text-[10px] text-slate-500">我骑过(次)</div>
+            <div className="mb-3 flex items-center justify-around gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2">
+              <div className="text-center">
+                <div className="text-base font-semibold text-slate-100">{stats.count}</div>
+                <div className="text-[10px] text-slate-500">骑过(次)</div>
               </div>
-              <div className="rounded-lg border border-white/10 bg-white/5 px-2 py-2">
-                <div className="text-lg font-semibold text-sky-300">{stats.avg ?? '—'}</div>
+              <div className="h-8 w-px bg-white/10" aria-hidden="true" />
+              <div className="text-center">
+                <div className="text-base font-semibold text-sky-300">{stats.avg ?? '—'}</div>
                 <div className="text-[10px] text-slate-500">我的平均分</div>
               </div>
-              <div className="rounded-lg border border-white/10 bg-white/5 px-2 py-2">
-                <div className="text-lg font-semibold text-slate-100">{stats.totalKm}</div>
-                <div className="text-[10px] text-slate-500">累计里程(km)</div>
+              <div className="h-8 w-px bg-white/10" aria-hidden="true" />
+              <div className="text-center">
+                <div className="text-base font-semibold text-slate-100">{stats.totalKm}</div>
+                <div className="text-[10px] text-slate-500">累计(km)</div>
               </div>
+              {stats.last && (
+                <>
+                  <div className="h-8 w-px bg-white/10" aria-hidden="true" />
+                  <div className="text-center">
+                    <div className="text-base font-semibold text-slate-100">{stats.last.slice(5)}</div>
+                    <div className="text-[10px] text-slate-500">最近</div>
+                  </div>
+                </>
+              )}
             </div>
           )}
 
           {/* 他人评价:预留区域 */}
           <div className="rounded-lg border border-dashed border-white/15 px-3 py-3">
-            <div className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-slate-400">
+            <div className="mb-2 flex items-center gap-1.5 text-xs font-medium text-slate-400">
               <Users className="h-3.5 w-3.5" aria-hidden="true" />
               其他骑友的评分与评论
               <span className="rounded bg-white/10 px-1.5 py-0.5 text-[10px] text-slate-400">待开放</span>
             </div>
             <ul className="space-y-1 text-[11px] leading-5 text-slate-500">
-              <li>· 该路线的骑友评分分布与综合评价</li>
-              <li>· 路况、坡度与车流量的实际反馈</li>
+              <li>· 骑友评分分布与综合评价</li>
+              <li>· 路况、坡度与车流量反馈</li>
               <li>· 最佳骑行时段与注意事项</li>
             </ul>
-            <p className="mt-2 flex items-center gap-1 text-[10px] text-slate-500">
-              <Star className="h-3 w-3" aria-hidden="true" />
-              本应用目前为本地个人版本,暂无社区数据;接入服务端后此处将展示真实评价
+            <p className="mt-2 flex items-start gap-1.5 text-[10px] leading-4 text-slate-500">
+              <Star className="mt-0.5 h-3 w-3 shrink-0" aria-hidden="true" />
+              <span>本应用目前为本地个人版本,暂无社区数据;接入服务端后此处将展示真实评价</span>
             </p>
           </div>
         </>

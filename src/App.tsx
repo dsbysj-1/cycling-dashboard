@@ -262,7 +262,7 @@ export default function App() {
               onEditRide={startEdit}
             />
 
-            <div className="grid grid-cols-1 gap-5 xl:grid-cols-12">
+            <div className="grid grid-cols-1 items-start gap-5 xl:grid-cols-12">
               <section className="card xl:col-span-7">
                 <div className="mb-4 flex items-center gap-2 text-sm font-semibold tracking-wide text-slate-300">
                   {editing ? '✏️ 编辑骑行记录' : '➕ 记录一次骑行'}
@@ -285,40 +285,43 @@ export default function App() {
                 />
               </section>
 
-              <section className="card xl:col-span-5">
-                <div className="mb-4 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm font-semibold tracking-wide text-slate-300">
-                  <span>📊 本次评分{selected ? ` · ${selected.date}` : ''}</span>
-                  {selected?.routeName && <span className="text-xs font-normal text-slate-400">路线:{selected.routeName}</span>}
-                  {selectedBikeName && (
-                    <span className="flex items-center gap-1 text-xs font-normal text-sky-300/90">
-                      <BikeIcon className="h-3 w-3 shrink-0" aria-hidden="true" />
-                      <span className="truncate" title={selectedBikeName}>
-                        单车:{selectedBikeName}
+              {/* 右列:本次评分 + 路线评价(同一列内纵向堆叠) */}
+              <div className="space-y-5 xl:col-span-5">
+                <section className="card">
+                  <div className="mb-4 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm font-semibold tracking-wide text-slate-300">
+                    <span>📊 本次评分{selected ? ` · ${selected.date}` : ''}</span>
+                    {selected?.routeName && <span className="text-xs font-normal text-slate-400">路线:{selected.routeName}</span>}
+                    {selectedBikeName && (
+                      <span className="flex items-center gap-1 text-xs font-normal text-sky-300/90">
+                        <BikeIcon className="h-3 w-3 shrink-0" aria-hidden="true" />
+                        <span className="truncate" title={selectedBikeName}>
+                          单车:{selectedBikeName}
+                        </span>
                       </span>
-                    </span>
-                  )}
-                  {selected?.startName && (
-                    <span className="flex max-w-full items-center gap-1 text-xs font-normal text-amber-300/90">
-                      <MapPin className="h-3 w-3 shrink-0" aria-hidden="true" />
-                      <span className="truncate" title={selected.startName}>
-                        起点:{selected.startName}
+                    )}
+                    {selected?.startName && (
+                      <span className="flex max-w-full items-center gap-1 text-xs font-normal text-amber-300/90">
+                        <MapPin className="h-3 w-3 shrink-0" aria-hidden="true" />
+                        <span className="truncate" title={selected.startName}>
+                          起点:{selected.startName}
+                        </span>
                       </span>
-                    </span>
-                  )}
-                </div>
-                {selected ? (
-                  <ScoreCard record={selected} />
-                ) : (
-                  <div className="flex h-64 flex-col items-center justify-center gap-2 text-sm text-slate-500">
-                    <span className="text-3xl">🚴‍♂️</span>
-                    <p>还没有骑行记录</p>
-                    <p className="text-xs">在左侧录入数据、导入 GPX 或绘制路线后保存,即可看到评分</p>
+                    )}
                   </div>
-                )}
-              </section>
+                  {selected ? (
+                    <ScoreCard record={selected} />
+                  ) : (
+                    <div className="flex h-40 flex-col items-center justify-center gap-2 text-sm text-slate-500">
+                      <span className="text-3xl">🚴‍♂️</span>
+                      <p>还没有骑行记录</p>
+                      <p className="text-xs">在左侧录入数据、导入 GPX 或绘制路线后保存,即可看到评分</p>
+                    </div>
+                  )}
+                </section>
 
-              {/* 路线评价:自己在该路线上的历史统计 + 他人评价(预留) */}
-              <RouteReviews routeName={selected?.routeName} rides={rides} />
+                {/* 路线评价:自己在该路线上的历史统计 + 他人评价(预留) */}
+                <RouteReviews routeName={selected?.routeName} rides={rides} />
+              </div>
             </div>
           </>
         )}

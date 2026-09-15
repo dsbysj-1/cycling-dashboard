@@ -99,43 +99,41 @@ export default function RideCheckIn({ bikes, days, rides, onCheckIn, onClearToda
   if (todayEntry) {
     const bike = todayEntry.bikeId ? bikes.find((b) => b.id === todayEntry.bikeId) : null
     return (
-      <section className="card">
-        <div className="mb-3 flex flex-wrap items-center gap-2 text-sm font-semibold tracking-wide text-slate-300">
-          {todayEntry.rode ? (
-            <CheckCircle2 className="h-4 w-4 text-emerald-400" aria-hidden="true" />
-          ) : (
-            <Moon className="h-4 w-4 text-slate-400" aria-hidden="true" />
-          )}
-          今日打卡 · {today}
-        </div>
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+      <section className="card !py-4">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+          <span className="flex items-center gap-2 text-sm font-semibold tracking-wide text-slate-300">
+            {todayEntry.rode ? (
+              <CheckCircle2 className="h-4 w-4 text-emerald-400" aria-hidden="true" />
+            ) : (
+              <Moon className="h-4 w-4 text-slate-400" aria-hidden="true" />
+            )}
+            今日打卡 · {today}
+          </span>
+
           {todayEntry.rode ? (
             <>
-              <span className="text-emerald-300">
+              <span className="text-sm text-emerald-300">
                 已骑行{bike ? ` · ${bike.name}(${BIKE_CATEGORIES[bike.category]})` : ''}
               </span>
               {todayEntry.distanceKm ? (
-                <span className="text-slate-300">{todayEntry.distanceKm} km</span>
+                <span className="text-sm text-slate-300">{todayEntry.distanceKm} km</span>
               ) : (
-                <span className="text-slate-500">未填距离(可补充详细数据)</span>
+                <span className="text-xs text-slate-500">未填距离</span>
               )}
               {checkInRide && (
-                <button
-                  type="button"
-                  className="btn-ghost !py-1 !text-xs"
-                  onClick={() => onEditRide(checkInRide)}
-                >
+                <button type="button" className="btn-ghost !py-1 !text-xs" onClick={() => onEditRide(checkInRide)}>
                   <Pencil className="h-3 w-3" aria-hidden="true" />
                   补充详细数据
                 </button>
               )}
             </>
           ) : (
-            <span className="text-slate-400">今天休息</span>
+            <span className="text-sm text-slate-400">今天休息</span>
           )}
+
           <button
             type="button"
-            className="text-[11px] text-slate-500 underline-offset-2 hover:text-slate-300 hover:underline"
+            className="ml-auto text-[11px] text-slate-500 underline-offset-2 hover:text-slate-300 hover:underline"
             onClick={() => void onClearToday()}
           >
             重新打卡
@@ -148,31 +146,39 @@ export default function RideCheckIn({ bikes, days, rides, onCheckIn, onClearToda
 
   // 未打卡
   return (
-    <section className="card">
-      <div className="mb-3 flex flex-wrap items-center gap-2 text-sm font-semibold tracking-wide text-slate-300">
-        <BikeIcon className="h-4 w-4 text-sky-400" aria-hidden="true" />
-        今日是否骑行 · {today}
-      </div>
+    <section className="card !py-4">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+        <span className="flex items-center gap-2 text-sm font-semibold tracking-wide text-slate-300">
+          <BikeIcon className="h-4 w-4 text-sky-400" aria-hidden="true" />
+          今日是否骑行 · {today}
+        </span>
 
-      <div className="flex flex-wrap items-center gap-2">
-        <button
-          type="button"
-          className={rode === true ? 'btn bg-emerald-500 text-white hover:bg-emerald-400' : 'btn-ghost'}
-          onClick={() => { setRode(true); setError('') }}
-        >
-          骑了
-        </button>
-        <button
-          type="button"
-          className={rode === false ? 'btn bg-slate-600 text-white hover:bg-slate-500' : 'btn-ghost'}
-          onClick={() => { setRode(false); setError('') }}
-        >
-          没骑(休息)
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            className={rode === true ? 'btn bg-emerald-500 text-white hover:bg-emerald-400' : 'btn-ghost'}
+            onClick={() => {
+              setRode(true)
+              setError('')
+            }}
+          >
+            骑了
+          </button>
+          <button
+            type="button"
+            className={rode === false ? 'btn bg-slate-600 text-white hover:bg-slate-500' : 'btn-ghost'}
+            onClick={() => {
+              setRode(false)
+              setError('')
+            }}
+          >
+            没骑(休息)
+          </button>
+        </div>
 
         {rode === true && (
           <>
-            <select className="field-input !w-auto min-w-[180px]" value={bikeId} onChange={(e) => setBikeId(e.target.value)}>
+            <select className="field-input !w-auto min-w-[170px]" value={bikeId} onChange={(e) => setBikeId(e.target.value)}>
               <option value="">选择单车…</option>
               {bikes.map((b) => (
                 <option key={b.id} value={b.id}>
@@ -184,7 +190,7 @@ export default function RideCheckIn({ bikes, days, rides, onCheckIn, onClearToda
               type="number"
               min="0"
               step="0.1"
-              className="field-input !w-[130px]"
+              className="field-input !w-[120px]"
               placeholder="距离(可选)"
               value={distance}
               onChange={(e) => setDistance(e.target.value)}
@@ -198,9 +204,7 @@ export default function RideCheckIn({ bikes, days, rides, onCheckIn, onClearToda
       </div>
 
       {bikes.length === 0 && (
-        <p className="mt-2 text-xs text-amber-300/90">
-          还没有单车 — 请先在下方「单车与轮胎管理」添加一辆,打卡时需要选择单车并同步到该车。
-        </p>
+        <p className="mt-2 text-xs text-amber-300/90">还没有单车 — 请先在「单车与轮胎」分页添加一辆,打卡时需要选择单车。</p>
       )}
       {rode === true && bikes.length > 0 && (
         <p className="mt-2 text-[11px] leading-5 text-slate-500">
