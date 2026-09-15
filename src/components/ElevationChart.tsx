@@ -57,7 +57,7 @@ export default function ElevationChart({ track }: Props) {
   if (!chart) {
     return (
       <div className="flex h-40 items-center justify-center text-sm text-slate-500">
-        暂无海拔数据 — 导入含海拔的 GPX 或使用地图绘制(自动采样)后生成
+        暂无海拔数据 — 导入含海拔的 GPX 或使用地图绘制（自动采样）后生成
       </div>
     )
   }

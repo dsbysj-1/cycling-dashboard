@@ -160,35 +160,35 @@ export function rainLevelLabel(rainFactor: number, precipitation: number | null,
 export function buildComment(env: EnvData, scores: Scores): string {
   const rainLabel = rainLevelLabel(scores.rainFactor, env.precipitation, env.precipitationProbability)
   const parts: string[] = []
-  if (scores.total >= 85) parts.push('今日天气极佳,适合长距离骑行。')
-  else if (scores.total >= 70) parts.push('整体条件不错,适合按计划骑行。')
-  else if (scores.total >= 50) parts.push('骑行条件一般,建议适当缩短路线。')
-  else parts.push('骑行条件较差,建议改期或改为室内训练。')
+  if (scores.total >= 85) parts.push('今日天气极佳，适合长距离骑行。')
+  else if (scores.total >= 70) parts.push('整体条件不错，适合按计划骑行。')
+  else if (scores.total >= 50) parts.push('骑行条件一般，建议适当缩短路线。')
+  else parts.push('骑行条件较差，建议改期或改为室内训练。')
 
-  if (scores.rainFactor > 15) parts.push('雨势较大,路面湿滑,不建议外出骑行。')
-  else if (scores.rainFactor > 5) parts.push('降雨概率较高,路面可能湿滑,建议改期或缩短路线。')
-  else if (rainLabel === '可能下雨') parts.push('降雨概率偏高,建议携带雨具并规划避雨点。')
+  if (scores.rainFactor > 15) parts.push('雨势较大，路面湿滑，不建议外出骑行。')
+  else if (scores.rainFactor > 5) parts.push('降雨概率较高，路面可能湿滑，建议改期或缩短路线。')
+  else if (rainLabel === '可能下雨') parts.push('降雨概率偏高，建议携带雨具并规划避雨点。')
   return parts.join('')
 }
 
 /** 改进建议:根据具体扣分项生成 */
 export function buildSuggestions(env: EnvData, route: RouteInfo): string[] {
   const suggestions: string[] = []
-  if (env.aqi != null && aqiDeduction(env.aqi) >= 30) suggestions.push('空气质量较差,建议佩戴口罩或改为室内训练。')
-  if (env.windLevel != null && env.windLevel >= 3) suggestions.push('风速较大,注意侧风,避免高速下压弯。')
+  if (env.aqi != null && aqiDeduction(env.aqi) >= 30) suggestions.push('空气质量较差，建议佩戴口罩或改为室内训练。')
+  if (env.windLevel != null && env.windLevel >= 3) suggestions.push('风速较大，注意侧风，避免高速下压弯。')
   if (env.temperature != null) {
-    if (env.temperature > 30) suggestions.push('气温偏高,注意及时补水与防晒。')
-    if (env.temperature < 5) suggestions.push('气温偏低,注意保暖与轮胎抓地力下降。')
+    if (env.temperature > 30) suggestions.push('气温偏高，注意及时补水与防晒。')
+    if (env.temperature < 5) suggestions.push('气温偏低，注意保暖与轮胎抓地力下降。')
   }
-  if (env.humidity != null && (env.humidity > 80 || env.humidity < 30)) suggestions.push('湿度不适宜,注意补水节奏。')
+  if (env.humidity != null && (env.humidity > 80 || env.humidity < 30)) suggestions.push('湿度不适宜，注意补水节奏。')
 
   const rainFactor = calcRainFactor(env.precipitation, env.precipitationProbability)
   if (rainFactor > 0 || rainDeduction(rainFactor, env.precipitation, env.precipitationProbability) > 0)
-    suggestions.push('存在降雨风险,建议携带雨具。')
+    suggestions.push('存在降雨风险，建议携带雨具。')
 
-  if (route.elevationGain != null && route.elevationGain >= 300) suggestions.push('累计爬升较大,合理分配体能并检查刹车。')
-  if (route.avgGrade != null && route.avgGrade > 5) suggestions.push('平均坡度较陡,注意变速节奏与爬坡补水。')
-  if (route.surface === 'gravel' || route.surface === 'mixed') suggestions.push('非柏油路面较多,注意抓地力并降低过弯速度。')
-  if (route.traffic === 'high') suggestions.push('交通流量较大,佩戴头盔并靠右骑行。')
+  if (route.elevationGain != null && route.elevationGain >= 300) suggestions.push('累计爬升较大，合理分配体能并检查刹车。')
+  if (route.avgGrade != null && route.avgGrade > 5) suggestions.push('平均坡度较陡，注意变速节奏与爬坡补水。')
+  if (route.surface === 'gravel' || route.surface === 'mixed') suggestions.push('非柏油路面较多，注意抓地力并降低过弯速度。')
+  if (route.traffic === 'high') suggestions.push('交通流量较大，佩戴头盔并靠右骑行。')
   return suggestions
 }

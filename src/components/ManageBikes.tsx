@@ -85,7 +85,7 @@ export default function ManageBikes({ bikes, onSave, onRemove }: Props) {
 
   /** 换胎:把外胎安装里程重置为当前累计里程,寿命重新计算 */
   const quickRetire = (b: BikeWithStatus) => {
-    if (!confirm(`为「${b.name}」换上新外胎?\n外胎安装里程将重置为当前累计里程 ${b.totalKm} km。`)) return
+    if (!confirm(`为「${b.name}」换上新外胎？\n外胎安装里程将重置为当前累计里程 ${b.totalKm} km。`)) return
     onSave({ ...b, tireInstalledAt: todayLocal(), tireStartKm: b.totalKm, updatedAt: Date.now() })
   }
 
@@ -96,7 +96,7 @@ export default function ManageBikes({ bikes, onSave, onRemove }: Props) {
           <BikeIcon className="h-4 w-4 text-sky-400" aria-hidden="true" />
           单车与轮胎管理
         </span>
-        <span className="hidden text-[11px] text-slate-500 sm:inline">按该车累计里程跟踪外胎寿命,超期会提醒检查</span>
+        <span className="hidden text-[11px] text-slate-500 sm:inline">按该车累计里程跟踪外胎寿命，超期会提醒检查</span>
         {!draft && (
           <button type="button" className="btn-primary ml-auto !py-1.5" onClick={() => { setDraft(emptyDraft()); setError('') }}>
             <Plus className="h-4 w-4" aria-hidden="true" />
@@ -135,7 +135,7 @@ export default function ManageBikes({ bikes, onSave, onRemove }: Props) {
               </select>
             </div>
             <div>
-              <label className="field-label">外胎类型(建议寿命)</label>
+              <label className="field-label">外胎类型（建议寿命）</label>
               <select
                 className="field-input"
                 value={draft.tireTypeId}
@@ -158,7 +158,7 @@ export default function ManageBikes({ bikes, onSave, onRemove }: Props) {
               />
             </div>
             <div>
-              <label className="field-label">安装时单车累计里程 (km)</label>
+              <label className="field-label">安装时单车累计里程（km）</label>
               <input
                 type="number"
                 min="0"
@@ -193,7 +193,7 @@ export default function ManageBikes({ bikes, onSave, onRemove }: Props) {
       {/* 单车列表 */}
       {bikes.length === 0 && !draft ? (
         <div className="flex h-24 items-center justify-center rounded-xl border border-dashed border-white/15 text-sm text-slate-500">
-          还没有添加单车 — 添加后在记录骑行时可以选择单车,并跟踪外胎寿命
+          还没有添加单车 — 添加后在记录骑行时可以选择单车，并跟踪外胎寿命
         </div>
       ) : (
         bikes.length > 0 && (
@@ -220,7 +220,7 @@ export default function ManageBikes({ bikes, onSave, onRemove }: Props) {
                     level === 'expired'
                       ? `已超期 ${Math.round(Math.abs(tire!.remainingKm))} km,请注意检查外胎状态`
                       : level === 'soon'
-                        ? `接近寿命,还剩 ${Math.round(tire!.remainingKm)} km`
+                        ? `接近寿命，还剩 ${Math.round(tire!.remainingKm)} km`
                         : `还剩 ${Math.round(tire!.remainingKm)} km`
                   return (
                     <tr key={b.id} className="border-b border-white/5">
@@ -282,7 +282,7 @@ export default function ManageBikes({ bikes, onSave, onRemove }: Props) {
                             type="button"
                             className="rounded-md px-2 py-1 text-xs text-red-300 hover:bg-red-400/10"
                             onClick={() => {
-                              if (confirm(`删除单车「${b.name}」?\n历史骑行记录会保留,只是不再关联这辆车。`)) onRemove(b.id)
+                              if (confirm(`删除单车「${b.name}」?\n历史骑行记录会保留，只是不再关联这辆车。`)) onRemove(b.id)
                             }}
                           >
                             <Trash2 className="mr-1 inline h-3 w-3" aria-hidden="true" />

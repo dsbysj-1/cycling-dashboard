@@ -3,7 +3,7 @@ import type { RideRecord } from '../types'
 import { areaPath, linePath, scaleLinear } from '../utils/chartHelpers'
 
 interface Props {
-  rides: RideRecord[] // 按日期倒序传入,内部取最近 10 次并转为时间正序
+  rides: RideRecord[] // 按日期倒序传入，内部取最近 10 次并转为时间正序
 }
 
 const W = 720

@@ -3,9 +3,9 @@ import type { TrackPoint } from '../types'
 /** 用 DOMParser 解析 GPX 文本,提取轨迹点(lat/lon/ele/time) */
 export function parseGPX(xml: string): { points: TrackPoint[]; name?: string } {
   const doc = new DOMParser().parseFromString(xml, 'application/xml')
-  if (doc.querySelector('parsererror')) throw new Error('GPX 文件格式无效(XML 解析失败)')
+  if (doc.querySelector('parsererror')) throw new Error('GPX 文件格式无效（XML 解析失败）')
   const nodes = Array.from(doc.getElementsByTagName('trkpt'))
-  if (nodes.length === 0) throw new Error('GPX 文件中没有轨迹点(trkpt)')
+  if (nodes.length === 0) throw new Error('GPX 文件中没有轨迹点（trkpt）')
   const points: TrackPoint[] = []
   for (const node of nodes) {
     const lat = parseFloat(node.getAttribute('lat') ?? '')
@@ -20,7 +20,7 @@ export function parseGPX(xml: string): { points: TrackPoint[]; name?: string } {
       time: timeNode?.textContent?.trim() || undefined,
     })
   }
-  if (points.length < 2) throw new Error('有效轨迹点不足(至少需要 2 个)')
+  if (points.length < 2) throw new Error('有效轨迹点不足（至少需要 2 个）')
   const nameNode = doc.getElementsByTagName('name')[0]
   return { points, name: nameNode?.textContent?.trim() || undefined }
 }

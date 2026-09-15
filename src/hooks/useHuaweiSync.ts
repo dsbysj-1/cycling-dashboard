@@ -41,7 +41,7 @@ export function useHuaweiSync(): HuaweiSyncState {
       setStatus('success')
       return result
     } catch (err) {
-      setError(err instanceof Error ? err.message : '同步失败,请稍后重试')
+      setError(err instanceof Error ? err.message : '同步失败，请稍后重试')
       setStatus('error')
       return null
     }

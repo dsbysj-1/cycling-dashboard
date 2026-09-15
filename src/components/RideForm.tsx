@@ -114,7 +114,7 @@ export default function RideForm({ initialRecord, onSave, onCancelEdit, bikes = 
       times: { startISO: string; endISO: string } | null
     ) => {
       if (!loc) {
-        setEnvMeta((m) => ({ ...m, weatherError: '请先选择城市,或导入/规划/绘制路线以确定位置' }))
+        setEnvMeta((m) => ({ ...m, weatherError: '请先选择城市，或导入/规划/绘制路线以确定位置' }))
         return
       }
       const result = await fetchEnv({
@@ -191,16 +191,16 @@ export default function RideForm({ initialRecord, onSave, onCancelEdit, bikes = 
           setAvgSpeed(String(Math.round((summary.distanceKm / (minutes / 60)) * 10) / 10))
         }
         setGpxMessage(
-          `已导入 ${file.name}:${points.length} 个轨迹点,距离 ${summary.distanceKm} km,爬升 ${summary.elevationGain} m。已识别骑行时段,获取环境数据时将按该时段提取逐小时降雨。`
+          `已导入 ${file.name}:${points.length} 个轨迹点，距离 ${summary.distanceKm} km,爬升 ${summary.elevationGain} m。已识别骑行时段，获取环境数据时将按该时段提取逐小时降雨。`
         )
       } else {
         setRideTimes(null)
         setGpxMessage(
-          `已导入 ${file.name}:${points.length} 个轨迹点,距离 ${summary.distanceKm} km,爬升 ${summary.elevationGain} m(无时间戳,不生成速度曲线)。`
+          `已导入 ${file.name}:${points.length} 个轨迹点，距离 ${summary.distanceKm} km,爬升 ${summary.elevationGain} m(无时间戳，不生成速度曲线)。`
         )
       }
     } catch (err) {
-      setGpxMessage(`GPX 导入失败:${err instanceof Error ? err.message : String(err)}`)
+      setGpxMessage(`GPX 导入失败：${err instanceof Error ? err.message : String(err)}`)
       setRideTimes(null)
     }
   }
@@ -225,12 +225,12 @@ export default function RideForm({ initialRecord, onSave, onCancelEdit, bikes = 
       setDistanceKm(String(km))
       setElevationGain(String(gain))
       setAvgGrade(String(Math.round((gain / Math.max(1, km * 1000)) * 10000) / 100))
-      setGpxMessage(`已绘制路线:${km} km,海拔采样 ${enriched.length} 点估算爬升 ${gain} m。`)
+      setGpxMessage(`已绘制路线：${km} km,海拔采样 ${enriched.length} 点估算爬升 ${gain} m。`)
     } catch (err) {
       const km = Math.round((trackDistanceMeters(points) / 1000) * 100) / 100
       setDistanceKm(String(km))
       setGpxMessage(
-        `已绘制路线:${km} km。海拔采样失败(${err instanceof Error ? err.message : String(err)}),请手动填写累计爬升。`
+        `已绘制路线：${km} km。海拔采样失败(${err instanceof Error ? err.message : String(err)}),请手动填写累计爬升。`
       )
     } finally {
       setElevLoading(false)
@@ -277,7 +277,7 @@ export default function RideForm({ initialRecord, onSave, onCancelEdit, bikes = 
     setGpxMessage(
       `已选择「${candidate.name}」:${candidate.distanceKm} km,预计 ${candidate.durationMin} 分钟` +
         (gain != null ? `,采样估算爬升 ${gain} m` : ',海拔采样失败请手动填写爬升') +
-        '。环境数据已自动采集,可直接保存。'
+        '。环境数据已自动采集，可直接保存。'
     )
   }
 
@@ -290,7 +290,7 @@ export default function RideForm({ initialRecord, onSave, onCancelEdit, bikes = 
       setMaxSpeed(String(data.maxSpeed))
       setElevationGain(String(data.elevationGain))
       setRouteName(data.routeName)
-      setNotes(`路线名称:${data.routeName}`)
+      setNotes(`路线名称：${data.routeName}`)
       // 表单字段变化后,右侧评分预览会通过 useMemo 自动重新计算
       showToast('华为数据同步成功', 'success')
     },
@@ -316,7 +316,7 @@ export default function RideForm({ initialRecord, onSave, onCancelEdit, bikes = 
       return
     }
     if (!Number.isFinite(distance) || distance <= 0) {
-      alert('请填写有效的骑行距离(km)')
+      alert('请填写有效的骑行距离（km）')
       return
     }
     const gain = elevationGain ? parseFloat(elevationGain) : null
@@ -360,7 +360,7 @@ export default function RideForm({ initialRecord, onSave, onCancelEdit, bikes = 
     // 保存时若所选单车的外胎已超期,提醒用户检查外胎状态
     if (selectedBike?.tire?.level === 'expired') {
       showToast(
-        `单车「${selectedBike.name}」的外胎已超过建议使用寿命,请注意检查外胎状态`,
+        `单车「${selectedBike.name}」的外胎已超过建议使用寿命，请注意检查外胎状态`,
         'error'
       )
     }
@@ -400,7 +400,7 @@ export default function RideForm({ initialRecord, onSave, onCancelEdit, bikes = 
             <input type="date" className="field-input" value={date} onChange={(e) => setDate(e.target.value)} />
           </div>
           <div>
-            <label className="field-label">城市(空气质量查询)</label>
+            <label className="field-label">城市（空气质量查询）</label>
             <select
               className="field-input"
               value={cityName}
@@ -417,7 +417,7 @@ export default function RideForm({ initialRecord, onSave, onCancelEdit, bikes = 
             </select>
           </div>
           <div>
-            <label className="field-label">自定义城市编码(可选)</label>
+            <label className="field-label">自定义城市编码（可选）</label>
             <input
               className="field-input"
               placeholder="如 101280601"
@@ -431,17 +431,17 @@ export default function RideForm({ initialRecord, onSave, onCancelEdit, bikes = 
             </label>
             <input
               className="field-input"
-              placeholder="规划路线或导入 GPX 后自动填入,也可手动填写"
+              placeholder="规划路线或导入 GPX 后自动填入，也可手动填写"
               value={startName}
               onChange={(e) => setStartName(e.target.value)}
-              title={location ? `坐标:${location.lat.toFixed(4)}, ${location.lon.toFixed(4)}` : undefined}
+              title={location ? `坐标：${location.lat.toFixed(4)}, ${location.lon.toFixed(4)}` : undefined}
             />
           </div>
           <div>
             <label className="field-label">起点所在区</label>
             <input
               className="field-input"
-              placeholder="自动识别,如 广州市天河区"
+              placeholder="自动识别，如 广州市天河区"
               value={startDistrict}
               onChange={(e) => setStartDistrict(e.target.value)}
             />
@@ -458,19 +458,19 @@ export default function RideForm({ initialRecord, onSave, onCancelEdit, bikes = 
             </select>
           </div>
           <div>
-            <label className="field-label">距离 (km) *</label>
+            <label className="field-label">距离（km） *</label>
             <input type="number" min="0" step="0.1" className="field-input" value={distanceKm} onChange={(e) => setDistanceKm(e.target.value)} />
           </div>
           <div>
-            <label className="field-label">时长 (分钟)</label>
+            <label className="field-label">时长（分钟）</label>
             <input type="number" min="0" className="field-input" value={durationMin} onChange={(e) => setDurationMin(e.target.value)} />
           </div>
           <div>
-            <label className="field-label">平均速度 (km/h)</label>
+            <label className="field-label">平均速度（km/h）</label>
             <input type="number" min="0" step="0.1" className="field-input" value={avgSpeed} onChange={(e) => setAvgSpeed(e.target.value)} />
           </div>
           <div>
-            <label className="field-label">最高速度 (km/h)</label>
+            <label className="field-label">最高速度（km/h）</label>
             <input type="number" min="0" step="0.1" className="field-input" value={maxSpeed} onChange={(e) => setMaxSpeed(e.target.value)} />
           </div>
         </div>
@@ -478,12 +478,12 @@ export default function RideForm({ initialRecord, onSave, onCancelEdit, bikes = 
           <p className="mt-2 rounded-lg border border-red-400/30 bg-red-500/10 px-3 py-2 text-xs leading-5 text-red-300">
             ⚠ 单车「{selectedBike.name}」的{selectedBike.tire.tireName}已超过建议使用寿命(已骑{' '}
             {Math.round(selectedBike.tire.usedKm)} km / 建议 {selectedBike.tire.lifeKm} km,超期{' '}
-            {Math.round(Math.abs(selectedBike.tire.remainingKm))} km),请注意检查外胎状态,及时更换。
+            {Math.round(Math.abs(selectedBike.tire.remainingKm))} km),请注意检查外胎状态，及时更换。
           </p>
         )}
         {selectedBike?.tire?.level === 'soon' && (
           <p className="mt-2 rounded-lg border border-amber-400/30 bg-amber-500/10 px-3 py-2 text-xs leading-5 text-amber-300">
-            单车「{selectedBike.name}」的{selectedBike.tire.tireName}接近建议寿命,还剩{' '}
+            单车「{selectedBike.name}」的{selectedBike.tire.tireName}接近建议寿命，还剩{' '}
             {Math.round(selectedBike.tire.remainingKm)} km,请留意胎面磨损。
           </p>
         )}
@@ -497,13 +497,13 @@ export default function RideForm({ initialRecord, onSave, onCancelEdit, bikes = 
           onError={(msg) => showToast(msg, 'error')}
         />
         <p className="mt-2 text-[11px] leading-5 text-slate-500">
-          当前为本地模拟数据(Health Kit 权限审核中),真实接口已在 <code className="text-slate-400">utils/huaweiMock.ts</code> 预留。
+          当前为演示数据（华为 Health Kit 权限审核中），通过审核后将自动改为读取手表真实数据。
         </p>
       </section>
 
       {/* 数据来源 */}
       <section>
-        <h3 className="card-title">🗺️ 路线(自动规划 / GPX 导入 / 地图绘制)</h3>
+        <h3 className="card-title">🗺️ 路线（自动规划 / GPX 导入 / 地图绘制）</h3>
 
         <RoutePlanner
           city={cityName}
@@ -518,12 +518,12 @@ export default function RideForm({ initialRecord, onSave, onCancelEdit, bikes = 
           picking={pickingOrigin}
           onPickingChange={(on) => {
             setPickingOrigin(on)
-            if (on) setDrawMode(false) // 点选与手绘互斥,避免地图点击语义冲突
+            if (on) setDrawMode(false) // 点选与手绘互斥，避免地图点击语义冲突
           }}
         />
 
         <div className="mt-3 flex flex-wrap items-center gap-3">
-          <span className="text-xs text-slate-500">或者:</span>
+          <span className="text-xs text-slate-500">或者：</span>
           <input
             ref={fileInputRef}
             type="file"
@@ -579,11 +579,11 @@ export default function RideForm({ initialRecord, onSave, onCancelEdit, bikes = 
         <h3 className="card-title">🛣️ 路线属性</h3>
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
           <div>
-            <label className="field-label">累计爬升 (m)</label>
+            <label className="field-label">累计爬升（m）</label>
             <input type="number" min="0" className="field-input" value={num(elevationGain)} onChange={(e) => setElevationGain(e.target.value)} />
           </div>
           <div>
-            <label className="field-label">平均坡度 (%)</label>
+            <label className="field-label">平均坡度（%）</label>
             <input type="number" min="0" step="0.1" className="field-input" value={num(avgGrade)} onChange={(e) => setAvgGrade(e.target.value)} />
           </div>
           <div>
@@ -612,30 +612,30 @@ export default function RideForm({ initialRecord, onSave, onCancelEdit, bikes = 
       {/* 环境数据 */}
       <section>
         <div className="mb-3 flex items-center justify-between">
-          <h3 className="card-title mb-0">🌦️ 环境数据(自动采集,可手动修正)</h3>
+          <h3 className="card-title mb-0">🌦️ 环境数据（自动采集，可手动修正）</h3>
           <button type="button" className="btn-primary" disabled={envLoading} onClick={() => void handleFetchEnv()}>
             {envLoading ? '采集中…' : '获取环境数据'}
           </button>
         </div>
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
           <div>
-            <label className="field-label">气温 (℃)</label>
+            <label className="field-label">气温（℃）</label>
             <input type="number" step="0.1" className="field-input" value={num(env.temperature)} onChange={(e) => setEnvField('temperature', e.target.value)} />
           </div>
           <div>
-            <label className="field-label">风力 (级)</label>
+            <label className="field-label">风力（级）</label>
             <input type="number" min="0" max="12" className="field-input" value={num(env.windLevel)} onChange={(e) => setEnvField('windLevel', e.target.value)} />
           </div>
           <div>
-            <label className="field-label">湿度 (%)</label>
+            <label className="field-label">湿度（%）</label>
             <input type="number" min="0" max="100" className="field-input" value={num(env.humidity)} onChange={(e) => setEnvField('humidity', e.target.value)} />
           </div>
           <div>
-            <label className="field-label">降水量 (mm)</label>
+            <label className="field-label">降水量（mm）</label>
             <input type="number" min="0" step="0.1" className="field-input" value={num(env.precipitation)} onChange={(e) => setEnvField('precipitation', e.target.value)} />
           </div>
           <div>
-            <label className="field-label">降雨概率 (%)</label>
+            <label className="field-label">降雨概率（%）</label>
             <input type="number" min="0" max="100" className="field-input" value={num(env.precipitationProbability)} onChange={(e) => setEnvField('precipitationProbability', e.target.value)} />
           </div>
           <div>
@@ -659,11 +659,11 @@ export default function RideForm({ initialRecord, onSave, onCancelEdit, bikes = 
             </div>
           </div>
         </div>
-        {envMeta.weatherNote && <p className="mt-2 text-xs text-slate-400">天气:{envMeta.weatherNote}</p>}
+        {envMeta.weatherNote && <p className="mt-2 text-xs text-slate-400">天气：{envMeta.weatherNote}</p>}
         {(envMeta.weatherError || envMeta.aqiError) && (
           <div className="mt-2 space-y-1 text-xs text-red-300/90">
-            {envMeta.weatherError && <p>天气:{envMeta.weatherError}(可手动填写)</p>}
-            {envMeta.aqiError && <p>空气质量:{envMeta.aqiError}</p>}
+            {envMeta.weatherError && <p>天气：{envMeta.weatherError}(可手动填写)</p>}
+            {envMeta.aqiError && <p>空气质量：{envMeta.aqiError}</p>}
           </div>
         )}
       </section>
@@ -676,7 +676,7 @@ export default function RideForm({ initialRecord, onSave, onCancelEdit, bikes = 
         </div>
         <div className="flex items-center justify-between rounded-xl border border-sky-400/20 bg-sky-400/5 px-4 py-3">
           <div className="text-sm">
-            <span className="text-slate-400">评分预览:</span>
+            <span className="text-slate-400">评分预览：</span>
             <span className="ml-2 text-2xl font-bold text-sky-300">{preview.scores.total}</span>
             <span className="ml-2 text-xs text-slate-400">
               天气 {preview.scores.weather} · 路线 {preview.scores.route} · 降雨指数 {preview.scores.rainFactor}({preview.rainLabel})

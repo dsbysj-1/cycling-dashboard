@@ -137,7 +137,7 @@ export default function RoutePlanner({
   /** 使用浏览器定位作为起点 */
   const handleLocate = () => {
     if (!navigator.geolocation) {
-      setLocError('当前浏览器不支持定位,可改用地图点选或搜索起点')
+      setLocError('当前浏览器不支持定位，可改用地图点选或搜索起点')
       return
     }
     setLocating(true)
@@ -150,7 +150,7 @@ export default function RoutePlanner({
         destTips.clear()
       },
       (err) => {
-        setLocError(`定位失败(${err.message}),可改用地图点选或搜索起点`)
+        setLocError(`定位失败（${err.message}），可改用地图点选或搜索起点`)
         setLocating(false)
       },
       { enableHighAccuracy: false, timeout: 8000, maximumAge: 300000 }
@@ -159,7 +159,7 @@ export default function RoutePlanner({
 
   const handlePlan = async (withDestination: boolean) => {
     if (!amap || status !== 'ready') {
-      setError('地图服务未就绪,无法规划路线')
+      setError('地图服务未就绪，无法规划路线')
       return
     }
     if (!effectiveOrigin) {
@@ -237,7 +237,7 @@ export default function RoutePlanner({
           <div className="relative min-w-[190px] flex-1">
             <input
               className="field-input"
-              placeholder="搜索起点,如 天河体育中心"
+              placeholder="搜索起点，如 天河体育中心"
               value={originTips.keyword}
               onChange={(e) => originTips.setKeyword(e.target.value)}
               onFocus={() => originTips.setOpen(originTips.tips.length > 0)}
@@ -276,11 +276,11 @@ export default function RoutePlanner({
 
       {/* 目的地 */}
       <div className="relative">
-        <label className="field-label">目的地(可选,留空则自动推荐起点周边的骑行目的地)</label>
+        <label className="field-label">目的地（可选，留空则自动推荐起点周边的骑行目的地）</label>
         <div className="flex flex-wrap gap-2">
           <input
             className="field-input !w-auto min-w-[200px] flex-1"
-            placeholder="搜索地点,如 越秀公园 / 大学城"
+            placeholder="搜索地点，如 越秀公园 / 大学城"
             value={destTips.keyword}
             onChange={(e) => {
               destTips.setKeyword(e.target.value)
@@ -325,7 +325,7 @@ export default function RoutePlanner({
       {candidates.length > 0 && (
         <div className="space-y-2">
           <p className="text-xs text-slate-400">
-            共 {candidates.length} 条候选路线,点击即自动填入数据并采集环境信息:
+            共 {candidates.length} 条候选路线，点击即自动填入数据并采集环境信息：
           </p>
           <ul className="grid gap-2 sm:grid-cols-2">
             {candidates.map((c) => {

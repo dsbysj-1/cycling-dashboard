@@ -68,7 +68,7 @@ export async function fetchHuaweiRideData(options: HuaweiSyncOptions = {}): Prom
 
   // 模拟 10% 的请求失败,用于验证失败提示与容错
   if (Math.random() < failRate) {
-    throw new Error('同步失败,请稍后重试')
+    throw new Error('同步失败，请稍后重试')
   }
 
   return createMockRide()

@@ -20,7 +20,7 @@ export default class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
-    console.error('[骑行看板] 渲染出错:', error, info.componentStack)
+    console.error('[骑行看板] 渲染出错：', error, info.componentStack)
   }
 
   render() {
@@ -30,7 +30,7 @@ export default class ErrorBoundary extends Component<Props, State> {
           <div className="rounded-2xl border border-red-400/30 bg-red-500/5 p-6">
             <h2 className="mb-2 text-base font-semibold text-red-300">页面出现异常</h2>
             <p className="mb-4 text-sm leading-6 text-slate-300">
-              渲染过程中发生错误,已阻止白屏。本地数据仍保存在浏览器中,不会丢失。
+              渲染过程中发生错误，已阻止白屏。本地数据仍保存在浏览器中，不会丢失。
             </p>
             <pre className="mb-4 max-h-40 overflow-auto rounded-lg bg-black/40 p-3 text-xs text-red-200/90">
               {this.state.error.message}

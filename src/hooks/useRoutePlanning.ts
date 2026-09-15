@@ -156,7 +156,7 @@ export function searchRideDestinations(
         ? { city: adcode, pageSize: SEARCH_PAGE_SIZE, extensions: 'base', citylimit: true }
         : { pageSize: SEARCH_PAGE_SIZE, extensions: 'base' }
       const placeSearch = new AMap.PlaceSearch(options)
-      const timer = setTimeout(() => reject(new Error('目的地搜索超时,请重试')), 15000)
+      const timer = setTimeout(() => reject(new Error('目的地搜索超时，请重试')), 15000)
 
       const collect = (status: string, result: any) => {
         clearTimeout(timer)
@@ -227,7 +227,7 @@ export function planRideRoute(
 ): Promise<PlannedRoute> {
   return new Promise((resolve, reject) => {
     const riding = new AMap.Riding({ policy: 0 })
-    const timer = setTimeout(() => reject(new Error('路线规划超时,请重试')), 15000)
+    const timer = setTimeout(() => reject(new Error('路线规划超时，请重试')), 15000)
     riding.search(origin, destination, (status: string, result: any) => {
       clearTimeout(timer)
       if (status !== 'complete') {
@@ -344,7 +344,7 @@ export async function buildRouteCandidates(
     throw new Error(
       destination
         ? `无法规划去往「${destination.name}」的骑行路线`
-        : '起点周边 30km 内没有搜索到合适的骑行目的地,可换个起点或指定目的地'
+        : '起点周边 30km 内没有搜索到合适的骑行目的地，可换个起点或指定目的地'
     )
   }
   // 明确指定的目的地排在最前,其余按距离由近到远

@@ -172,7 +172,7 @@ export default function RideCheckIn({ bikes, days, rides, onCheckIn, onClearToda
               setError('')
             }}
           >
-            没骑(休息)
+            没骑（休息）
           </button>
         </div>
 
@@ -191,7 +191,7 @@ export default function RideCheckIn({ bikes, days, rides, onCheckIn, onClearToda
               min="0"
               step="0.1"
               className="field-input !w-[120px]"
-              placeholder="距离(可选)"
+              placeholder="距离（可选）"
               value={distance}
               onChange={(e) => setDistance(e.target.value)}
             />
@@ -204,11 +204,11 @@ export default function RideCheckIn({ bikes, days, rides, onCheckIn, onClearToda
       </div>
 
       {bikes.length === 0 && (
-        <p className="mt-2 text-xs text-amber-300/90">还没有单车 — 请先在「单车与轮胎」分页添加一辆,打卡时需要选择单车。</p>
+        <p className="mt-2 text-xs text-amber-300/90">还没有单车 — 请先在「单车与轮胎」分页添加一辆，打卡时需要选择单车。</p>
       )}
       {rode === true && bikes.length > 0 && (
         <p className="mt-2 text-[11px] leading-5 text-slate-500">
-          打卡会生成今天的骑行记录并关联该车(同步累计里程、骑行次数与外胎寿命);距离可留空,之后点「补充详细数据」补全。
+          打卡会生成今天的骑行记录并关联该车（同步累计里程、骑行次数与外胎寿命）;距离可留空，之后点「补充详细数据」补全。
         </p>
       )}
       {error && <p className="mt-2 text-xs text-red-300">{error}</p>}

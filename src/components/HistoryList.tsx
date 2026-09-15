@@ -188,7 +188,7 @@ export default function HistoryList({ rides, bikes, selectedId, onSelect, onEdit
                     className="max-w-[180px] truncate px-3 py-2.5 text-slate-400"
                     title={
                       r.location
-                        ? `${r.startName || '起点'}\n坐标:${r.location.lat.toFixed(4)}, ${r.location.lon.toFixed(4)}`
+                        ? `${r.startName || '起点'}\n坐标：${r.location.lat.toFixed(4)}, ${r.location.lon.toFixed(4)}`
                         : r.startName || undefined
                     }
                   >
@@ -205,7 +205,7 @@ export default function HistoryList({ rides, bikes, selectedId, onSelect, onEdit
                     {r.distanceKm ? (
                       `${r.distanceKm} km`
                     ) : r.checkIn ? (
-                      <span className="rounded bg-sky-400/15 px-1.5 py-0.5 text-[10px] text-sky-300" title="由今日骑行打卡生成,可编辑补充距离等详细数据">
+                      <span className="rounded bg-sky-400/15 px-1.5 py-0.5 text-[10px] text-sky-300" title="由今日骑行打卡生成，可编辑补充距离等详细数据">
                         打卡
                       </span>
                     ) : (
@@ -231,7 +231,7 @@ export default function HistoryList({ rides, bikes, selectedId, onSelect, onEdit
                         type="button"
                         className="rounded-md px-2 py-1 text-xs text-red-300 hover:bg-red-400/10"
                         onClick={() => {
-                          if (confirm(`删除 ${r.date} 的骑行记录?`)) onDelete(r.id)
+                          if (confirm(`删除 ${r.date} 的骑行记录？`)) onDelete(r.id)
                         }}
                       >
                         删除

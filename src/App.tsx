@@ -9,6 +9,8 @@ import RideCheckIn from './components/RideCheckIn'
 import ScoreCard from './components/ScoreCard'
 import ScoreRadar from './components/ScoreRadar'
 import RouteReviews from './components/RouteReviews'
+import StatsOverview from './components/StatsOverview'
+import MaintenanceAlerts from './components/MaintenanceAlerts'
 import SpeedChart from './components/SpeedChart'
 import ElevationChart from './components/ElevationChart'
 import TrendChart from './components/TrendChart'
@@ -107,7 +109,7 @@ export default function App() {
     const existing = days.find((d) => d.date === today) ?? null
 
     if (!input.rode) {
-      await removeDay(today) // 覆盖当天原有打卡,避免残留旧的骑行记录关联
+      await removeDay(today) // 覆盖当天原有打卡，避免残留旧的骑行记录关联
       await saveDay({ id: today, date: today, rode: false, createdAt: now })
       if (existing?.rideId) await remove(existing.rideId)
       return null
@@ -203,7 +205,7 @@ export default function App() {
             <button
               type="button"
               onClick={toggleTheme}
-              title={theme === 'dark' ? '切换到日间(浅色)模式' : '切换到夜间(深色)模式'}
+              title={theme === 'dark' ? '切换到日间（浅色）模式' : '切换到夜间（深色）模式'}
               aria-label={theme === 'dark' ? '切换到日间模式' : '切换到夜间模式'}
               className="flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-slate-300 transition hover:bg-white/10"
             >
@@ -290,12 +292,12 @@ export default function App() {
                 <section className="card">
                   <div className="mb-4 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm font-semibold tracking-wide text-slate-300">
                     <span>📊 本次评分{selected ? ` · ${selected.date}` : ''}</span>
-                    {selected?.routeName && <span className="text-xs font-normal text-slate-400">路线:{selected.routeName}</span>}
+                    {selected?.routeName && <span className="text-xs font-normal text-slate-400">路线：{selected.routeName}</span>}
                     {selectedBikeName && (
                       <span className="flex items-center gap-1 text-xs font-normal text-sky-300/90">
                         <BikeIcon className="h-3 w-3 shrink-0" aria-hidden="true" />
                         <span className="truncate" title={selectedBikeName}>
-                          单车:{selectedBikeName}
+                          单车：{selectedBikeName}
                         </span>
                       </span>
                     )}
@@ -303,7 +305,7 @@ export default function App() {
                       <span className="flex max-w-full items-center gap-1 text-xs font-normal text-amber-300/90">
                         <MapPin className="h-3 w-3 shrink-0" aria-hidden="true" />
                         <span className="truncate" title={selected.startName}>
-                          起点:{selected.startName}
+                          起点：{selected.startName}
                         </span>
                       </span>
                     )}
@@ -314,13 +316,17 @@ export default function App() {
                     <div className="flex h-40 flex-col items-center justify-center gap-2 text-sm text-slate-500">
                       <span className="text-3xl">🚴‍♂️</span>
                       <p>还没有骑行记录</p>
-                      <p className="text-xs">在左侧录入数据、导入 GPX 或绘制路线后保存,即可看到评分</p>
+                      <p className="text-xs">在左侧录入数据、导入 GPX 或绘制路线后保存，即可看到评分</p>
                     </div>
                   )}
                 </section>
 
                 {/* 路线评价:自己在该路线上的历史统计 + 他人评价(预留) */}
                 <RouteReviews routeName={selected?.routeName} rides={rides} />
+
+                {/* 近 30 天概览与保养提醒:填补右列空白,提供日常最常看的两类信息 */}
+                <StatsOverview rides={rides} />
+                <MaintenanceAlerts bikes={bikes} onManage={() => setTab('bikes')} />
               </div>
             </div>
           </>
@@ -331,7 +337,7 @@ export default function App() {
           <>
             <section className="card">
               <div className="mb-4 flex items-center gap-2 text-sm font-semibold tracking-wide text-slate-300">
-                📈 评分趋势(最近 10 次)
+                📈 评分趋势（最近 10 次）
               </div>
               <TrendChart rides={rides} />
             </section>
@@ -383,7 +389,7 @@ export default function App() {
               <section className="card">
                 <div className="flex h-40 flex-col items-center justify-center gap-2 text-sm text-slate-500">
                   <p>还没有骑行记录</p>
-                  <p className="text-xs">保存记录后,这里会显示速度曲线、海拔曲线与骑行轨迹地图</p>
+                  <p className="text-xs">保存记录后，这里会显示速度曲线、海拔曲线与骑行轨迹地图</p>
                 </div>
               </section>
             )}
@@ -412,7 +418,7 @@ export default function App() {
         )}
 
         <footer className="space-y-2 pb-6 text-center text-[11px] text-slate-500">
-          <p>天气与空气质量:Open-Meteo · 海拔:Open-Meteo Elevation · 地图与路线:高德 · 数据仅保存在本地浏览器</p>
+          <p>天气与空气质量：Open-Meteo · 海拔：Open-Meteo Elevation · 地图与路线：高德 · 数据仅保存在本地浏览器</p>
           <p>
             <a className="transition hover:text-slate-300" href="./privacy.html" target="_blank" rel="noreferrer">
               隐私政策

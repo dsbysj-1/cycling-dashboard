@@ -27,7 +27,7 @@ export default function HuaweiSyncButton({ onSynced, onError }: Props) {
       onSynced(result)
       return
     }
-    onError('同步失败,请稍后重试')
+    onError('同步失败，请稍后重试')
   }
 
   return (
@@ -37,7 +37,7 @@ export default function HuaweiSyncButton({ onSynced, onError }: Props) {
         onClick={() => void handleClick()}
         disabled={syncing}
         className="btn-primary"
-        title="当前阶段为本地模拟数据,Health Kit 权限审核通过后自动切换为真实接口"
+        title="当前阶段为本地模拟数据，Health Kit 权限审核通过后自动切换为真实接口"
       >
         {syncing ? (
           <RefreshCw className="h-4 w-4 animate-spin" aria-hidden="true" />
@@ -59,7 +59,7 @@ export default function HuaweiSyncButton({ onSynced, onError }: Props) {
 
       {data && (
         <span className="text-[11px] text-slate-500">
-          上次:{data.distance} km · {data.duration} 分钟 · 爬升 {data.elevationGain} m
+          上次：{data.distance} km · {data.duration} 分钟 · 爬升 {data.elevationGain} m
         </span>
       )}
     </div>

@@ -154,7 +154,7 @@ export async function fetchWeather(params: WeatherParams): Promise<WeatherResult
       `&past_days=${Math.min(daysAgo + 1, FORECAST_PAST_LIMIT)}&forecast_days=7&timezone=auto`
   } else {
     // 未来日期:预报接口最多 16 天
-    if (-daysAgo > 16) throw new Error(`${date} 距今超过 16 天,暂无天气预报数据`)
+    if (-daysAgo > 16) throw new Error(`${date} 距今超过 16 天，暂无天气预报数据`)
     url =
       `${FORECAST_URL}?latitude=${lat}&longitude=${lon}&hourly=${HOURLY_WITH_PROB}&daily=${DAILY_WITH_PROB}` +
       `&past_days=0&forecast_days=${-daysAgo + 1}&timezone=auto`
@@ -165,7 +165,7 @@ export async function fetchWeather(params: WeatherParams): Promise<WeatherResult
   const dailyTime = (daily?.time as string[] | undefined) ?? []
   if (!dailyTime.length) throw new Error('未查询到该日期的天气数据')
   const dayIndex = dailyTime.indexOf(date)
-  if (dayIndex < 0) throw new Error(`天气服务没有 ${date} 的数据(超出可查询范围)`)
+  if (dayIndex < 0) throw new Error(`天气服务没有 ${date} 的数据（超出可查询范围）`)
 
   const offset = data.utc_offset_seconds ?? 0
   const hourly = data.hourly
@@ -196,12 +196,12 @@ export async function fetchWeather(params: WeatherParams): Promise<WeatherResult
 
   const notes: string[] = []
   if (daysAgo > FORECAST_PAST_LIMIT) {
-    notes.push('历史归档接口不含降雨概率,降雨指数仅按降水量估算')
+    notes.push('历史归档接口不含降雨概率，降雨指数仅按降水量估算')
   }
   if (usedRideWindow && precipWindow) {
     notes.push('已按骑行时段提取逐小时降雨')
   } else if (usedRideWindow) {
-    notes.push('骑行时段无逐小时数据,改用当日汇总')
+    notes.push('骑行时段无逐小时数据，改用当日汇总')
   }
 
   return {
@@ -232,7 +232,7 @@ export async function fetchAirQuality(params: WeatherParams): Promise<AqiResult>
   const daysAgo = daysFromToday(date)
   const year = Number(date.slice(0, 4))
   if (daysAgo > 0 && year < AQI_HISTORY_START_YEAR) {
-    throw new Error(`${date} 早于空气质量历史数据范围(${AQI_HISTORY_START_YEAR} 年起),请手动填写`)
+    throw new Error(`${date} 早于空气质量历史数据范围（${AQI_HISTORY_START_YEAR} 年起），请手动填写`)
   }
 
   let url: string
@@ -241,7 +241,7 @@ export async function fetchAirQuality(params: WeatherParams): Promise<AqiResult>
   } else if (-daysAgo <= 7) {
     url = `${AIR_QUALITY_URL}?latitude=${lat}&longitude=${lon}&hourly=us_aqi,pm2_5&forecast_days=${-daysAgo + 1}&timezone=auto`
   } else {
-    throw new Error(`${date} 距今超过 7 天,暂无空气质量预报,请稍后再查或手动填写`)
+    throw new Error(`${date} 距今超过 7 天，暂无空气质量预报，请稍后再查或手动填写`)
   }
 
   const data: OpenMeteoResponse = await fetchJSON(url)

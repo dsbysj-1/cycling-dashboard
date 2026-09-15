@@ -14,7 +14,7 @@ export async function fetchElevations(points: { lat: number; lon: number }[]): P
     const lats = batch.map((p) => p.lat.toFixed(5)).join(',')
     const lons = batch.map((p) => p.lon.toFixed(5)).join(',')
     const res = await fetch(`${ELEVATION_URL}?latitude=${lats}&longitude=${lons}`)
-    if (!res.ok) throw new Error(`海拔查询失败 (HTTP ${res.status})`)
+    if (!res.ok) throw new Error(`海拔查询失败（HTTP ${res.status}）`)
     const data = await res.json()
     if (!Array.isArray(data?.elevation)) throw new Error('海拔数据格式异常')
     elevations.push(...(data.elevation as number[]))

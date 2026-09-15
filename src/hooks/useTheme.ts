@@ -11,7 +11,7 @@ function readSaved(): Theme {
   } catch {
     // localStorage 不可用时忽略
   }
-  return 'dark' // 应用默认深色(夜间)主题
+  return 'dark' // 应用默认深色（夜间）主题
 }
 
 /** 应用到 <html>:data-theme 驱动 CSS 变量,color-scheme 让原生控件(日期选择器等)跟随 */

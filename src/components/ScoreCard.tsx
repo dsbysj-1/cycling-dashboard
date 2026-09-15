@@ -45,7 +45,7 @@ export default function ScoreCard({ record }: { record: RideRecord }) {
             <SubScore label="路线 40%" value={scores.route} color="bg-amber-400/80" />
           </div>
           <div className="rounded-lg border border-white/10 bg-night-800 px-3 py-2 text-xs leading-5 text-slate-300">
-            <span className="text-sky-300">降雨指数:{scores.rainFactor}</span>({rainLabel})
+            <span className="text-sky-300">降雨指数：{scores.rainFactor}</span>({rainLabel})
             {(record.env.precipitation != null || record.env.precipitationProbability != null) && (
               <span className="text-slate-500">
                 {' '}

@@ -188,7 +188,7 @@ export default function MapView({
     return (
       <Placeholder className={className}>
         未配置高德地图 Key。在项目根目录 <code className="text-sky-300">.env</code> 中设置{' '}
-        <code className="text-sky-300">VITE_AMAP_KEY</code>(申请地址 lbs.amap.com,服务平台选「Web端(JS API)」)后重启 dev
+        <code className="text-sky-300">VITE_AMAP_KEY</code>(申请地址 lbs.amap.com,服务平台选「Web端（JS API）」)后重启 dev
         服务器即可启用地图与自动路线规划。其他功能不受影响。
       </Placeholder>
     )
@@ -197,9 +197,9 @@ export default function MapView({
   if (status === 'error') {
     return (
       <Placeholder className={className}>
-        地图加载失败:{error}
+        地图加载失败：{error}
         <br />
-        常见原因:Key 类型不是「Web端(JS API)」、Key 配错,或 2021-12 后申请的 Key 未配置安全密钥(在{' '}
+        常见原因：Key 类型不是「Web端（JS API）」、Key 配错，或 2021-12 后申请的 Key 未配置安全密钥(在{' '}
         <code className="text-sky-300">.env</code> 的 <code className="text-sky-300">VITE_AMAP_SECURITY_CODE</code>{' '}
         填入高德控制台的 jscode)。其他功能不受影响。
       </Placeholder>
@@ -216,7 +216,7 @@ export default function MapView({
       )}
       {drawEnabled && mapReady && (
         <div className="pointer-events-none absolute left-3 top-3 z-10 rounded-lg bg-black/60 px-3 py-1.5 text-xs text-amber-300">
-          绘制模式:单击加点,双击结束并计算路线
+          绘制模式：单击加点，双击结束并计算路线
         </div>
       )}
       {pickMode && mapReady && (

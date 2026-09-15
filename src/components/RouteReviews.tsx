@@ -39,7 +39,7 @@ export default function RouteReviews({ routeName, rides }: Props) {
 
       {!routeName ? (
         <p className="rounded-lg border border-dashed border-white/15 px-3 py-4 text-center text-xs leading-5 text-slate-500">
-          当前记录没有关联路线 — 用「自动规划路线」生成或导入 GPX 后,这里会显示该路线的评价
+          当前记录没有关联路线 — 用「自动规划路线」生成或导入 GPX 后，这里会显示该路线的评价
         </p>
       ) : (
         <>
@@ -48,7 +48,7 @@ export default function RouteReviews({ routeName, rides }: Props) {
             <div className="mb-3 flex items-center justify-around gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2">
               <div className="text-center">
                 <div className="text-base font-semibold text-slate-100">{stats.count}</div>
-                <div className="text-[10px] text-slate-500">骑过(次)</div>
+                <div className="text-[10px] text-slate-500">骑过（次）</div>
               </div>
               <div className="h-8 w-px bg-white/10" aria-hidden="true" />
               <div className="text-center">
@@ -58,7 +58,7 @@ export default function RouteReviews({ routeName, rides }: Props) {
               <div className="h-8 w-px bg-white/10" aria-hidden="true" />
               <div className="text-center">
                 <div className="text-base font-semibold text-slate-100">{stats.totalKm}</div>
-                <div className="text-[10px] text-slate-500">累计(km)</div>
+                <div className="text-[10px] text-slate-500">累计（km）</div>
               </div>
               {stats.last && (
                 <>
@@ -86,7 +86,7 @@ export default function RouteReviews({ routeName, rides }: Props) {
             </ul>
             <p className="mt-2 flex items-start gap-1.5 text-[10px] leading-4 text-slate-500">
               <Star className="mt-0.5 h-3 w-3 shrink-0" aria-hidden="true" />
-              <span>本应用目前为本地个人版本,暂无社区数据;接入服务端后此处将展示真实评价</span>
+              <span>本应用目前为本地个人版本，暂无社区数据；接入服务端后此处将展示真实评价</span>
             </p>
           </div>
         </>
