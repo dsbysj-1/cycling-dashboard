@@ -333,6 +333,7 @@ export default function RideForm({ initialRecord, onSave, onCancelEdit, bikes = 
       id: initialRecord?.id ?? `ride_${now}_${Math.random().toString(36).slice(2, 8)}`,
       label: initialRecord?.label,
       bikeId: bikeId || undefined,
+      checkIn: initialRecord?.checkIn,
       date,
       durationMin: durationMin ? parseFloat(durationMin) : null,
       distanceKm: Math.round(distance * 100) / 100,

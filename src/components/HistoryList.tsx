@@ -201,7 +201,17 @@ export default function HistoryList({ rides, bikes, selectedId, onSelect, onEdit
                       <span className="text-slate-600">{r.cityName}</span>
                     )}
                   </td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">{r.distanceKm ?? '—'} km</td>
+                  <td className="px-3 py-2.5 whitespace-nowrap">
+                    {r.distanceKm ? (
+                      `${r.distanceKm} km`
+                    ) : r.checkIn ? (
+                      <span className="rounded bg-sky-400/15 px-1.5 py-0.5 text-[10px] text-sky-300" title="由今日骑行打卡生成,可编辑补充距离等详细数据">
+                        打卡
+                      </span>
+                    ) : (
+                      '—'
+                    )}
+                  </td>
                   <td className="px-3 py-2.5 text-slate-400">{r.route.elevationGain ?? '—'} m</td>
                   <td className="px-3 py-2.5">
                     <ScoreDot value={r.scores?.weather} />

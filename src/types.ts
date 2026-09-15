@@ -86,13 +86,17 @@ export interface TireTypeInfo {
   lifeKm: number
 }
 
-/** 轮胎类别与对应的固定建议寿命 */
+/**
+ * 轮胎类别与对应的固定建议寿命。
+ * 按耐用度递增排列:公路竞赛胎(软胶,最不耐磨)< 公路开口胎 < 公路真空胎
+ * < 砾石外胎 < 山地外胎(胎面胶厚、花纹深,比公路胎耐用)< 旅行/通勤外胎。
+ */
 export const TIRE_TYPES: TireTypeInfo[] = [
-  { id: 'road-clincher', name: '公路开口胎', lifeKm: 5000 },
   { id: 'road-race', name: '公路竞赛胎', lifeKm: 3000 },
-  { id: 'road-tubeless', name: '公路真空胎', lifeKm: 5500 },
-  { id: 'mtb-trail', name: '山地外胎', lifeKm: 3500 },
-  { id: 'gravel', name: '砾石外胎', lifeKm: 4500 },
+  { id: 'road-clincher', name: '公路开口胎', lifeKm: 4500 },
+  { id: 'road-tubeless', name: '公路真空胎', lifeKm: 5000 },
+  { id: 'gravel', name: '砾石外胎', lifeKm: 5500 },
+  { id: 'mtb-trail', name: '山地外胎', lifeKm: 6500 },
   { id: 'touring', name: '旅行/通勤外胎', lifeKm: 8000 },
 ]
 
@@ -117,12 +121,31 @@ export interface Bike {
   updatedAt: number
 }
 
+/** 每日骑行打卡:记录「今天是否骑行」,骑了则关联单车 */
+export interface DayCheckIn {
+  /** 主键 = 日期 YYYY-MM-DD */
+  id: string
+  date: string
+  /** 今天是否骑行 */
+  rode: boolean
+  /** 骑了:使用的单车 */
+  bikeId?: string
+  /** 骑了:当天距离(km),可在打卡时填或稍后补充 */
+  distanceKm?: number
+  /** 打卡生成的骑行记录 id(用于跳转补充详细数据) */
+  rideId?: string
+  note?: string
+  createdAt: number
+}
+
 export interface RideRecord {
   id: string
   /** 路线编号/名称:新建时默认给出序号(1、2、3…),可在历史列表里重命名 */
   label?: string
   /** 本次骑行使用的单车(Bike 的 id);旧记录或未选择时为空 */
   bikeId?: string
+  /** 由「今日骑行打卡」生成的记录(仅记录了日期与单车,详细数据待补充) */
+  checkIn?: boolean
   /** 骑行日期 YYYY-MM-DD */
   date: string
   /** 时长,分钟 */

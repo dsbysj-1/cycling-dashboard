@@ -207,6 +207,8 @@ export default function ManageBikes({ bikes, onSave, onRemove }: Props) {
                   <th className="px-3 py-2 font-medium">类别</th>
                   <th className="px-3 py-2 font-medium">外胎</th>
                   <th className="px-3 py-2 font-medium">累计里程</th>
+                  <th className="px-3 py-2 font-medium">骑行次数</th>
+                  <th className="px-3 py-2 font-medium">最近骑行</th>
                   <th className="px-3 py-2 font-medium">外胎寿命</th>
                   <th className="px-3 py-2 font-medium">状态</th>
                   <th className="px-3 py-2 font-medium text-right">操作</th>
@@ -231,6 +233,8 @@ export default function ManageBikes({ bikes, onSave, onRemove }: Props) {
                         <span className="ml-1 text-[10px] text-slate-600">装于 {b.tireInstalledAt}</span>
                       </td>
                       <td className="px-3 py-2.5 whitespace-nowrap">{b.totalKm} km</td>
+                      <td className="px-3 py-2.5 whitespace-nowrap text-slate-300">{b.rideCount} 次</td>
+                      <td className="px-3 py-2.5 whitespace-nowrap text-slate-400">{b.lastRideDate ?? '—'}</td>
                       <td className="px-3 py-2.5">
                         <div className="flex items-center gap-2">
                           <span className="inline-block h-1.5 w-24 overflow-hidden rounded-full bg-white/10">

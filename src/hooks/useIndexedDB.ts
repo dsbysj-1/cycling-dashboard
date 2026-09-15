@@ -1,12 +1,14 @@
 import { useCallback, useEffect, useState } from 'react'
-import type { Bike, RideRecord } from '../types'
+import type { Bike, DayCheckIn, RideRecord } from '../types'
 
 const DB_NAME = 'cycling-dashboard'
-const DB_VERSION = 2
+const DB_VERSION = 3
 const RIDES_STORE = 'rides'
 const BIKES_STORE = 'bikes'
+const DAYS_STORE = 'days'
 const LS_RIDES = 'cycling-dashboard:rides'
 const LS_BIKES = 'cycling-dashboard:bikes'
+const LS_DAYS = 'cycling-dashboard:days'
 
 type StorageMode = 'indexeddb' | 'localstorage'
 
@@ -27,6 +29,10 @@ function openDB(): Promise<IDBDatabase> {
       }
       if (!db.objectStoreNames.contains(BIKES_STORE)) {
         db.createObjectStore(BIKES_STORE, { keyPath: 'id' })
+      }
+      // v3:每日骑行打卡
+      if (!db.objectStoreNames.contains(DAYS_STORE)) {
+        db.createObjectStore(DAYS_STORE, { keyPath: 'id' })
       }
     }
     req.onsuccess = () => resolve(req.result)
@@ -123,9 +129,11 @@ function makeStore<T extends { id: string }>(
 
 const rideSort = (a: RideRecord, b: RideRecord) => b.date.localeCompare(a.date) || b.createdAt - a.createdAt
 const bikeSort = (a: Bike, b: Bike) => a.createdAt - b.createdAt
+const daySort = (a: DayCheckIn, b: DayCheckIn) => b.date.localeCompare(a.date)
 
 export const ridesStore = makeStore<RideRecord>(RIDES_STORE, LS_RIDES, rideSort)
 export const bikesStore = makeStore<Bike>(BIKES_STORE, LS_BIKES, bikeSort)
+export const daysStore = makeStore<DayCheckIn>(DAYS_STORE, LS_DAYS, daySort)
 
 /* ---------------- React Hook ---------------- */
 
@@ -177,4 +185,10 @@ export function useRides() {
 export function useBikes() {
   const { items, loading, mode, save, remove, refresh } = useCollection(bikesStore)
   return { bikes: items, loading, mode, save, remove, refresh }
+}
+
+/** 每日骑行打卡存储(v3 新增 days 表) */
+export function useDays() {
+  const { items, loading, mode, save, remove, refresh } = useCollection(daysStore)
+  return { days: items, loading, mode, save, remove, refresh }
 }

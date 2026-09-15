@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
 import { MapPin, Bike as BikeIcon } from 'lucide-react'
 import type { RideRecord } from './types'
-import { useRides, useBikes } from './hooks/useIndexedDB'
+import { useRides, useBikes, useDays } from './hooks/useIndexedDB'
 import { withTireStatus } from './utils/tire'
 import RideForm from './components/RideForm'
+import RideCheckIn from './components/RideCheckIn'
 import ScoreCard from './components/ScoreCard'
 import ScoreRadar from './components/ScoreRadar'
 import SpeedChart from './components/SpeedChart'
@@ -27,6 +28,7 @@ function nextRideLabel(rides: RideRecord[]): string {
 export default function App() {
   const { rides, loading, mode, save, remove } = useRides()
   const { bikes: rawBikes, save: saveBike, remove: removeBike } = useBikes()
+  const { days, save: saveDay, remove: removeDay } = useDays()
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [editing, setEditing] = useState<RideRecord | null>(null)
 
@@ -62,6 +64,90 @@ export default function App() {
     await save({ ...record, label: label || undefined, updatedAt: Date.now() })
   }
 
+  /**
+   * 今日骑行打卡:
+   * 骑了 → 生成一条今天的骑行记录并关联所选单车,该车的累计里程/骑行次数/最近骑行日期
+   * 与外胎寿命随即在「单车与轮胎管理」中更新(自动同步);距离可留空,之后补充详细数据。
+   * 没骑 → 只记录当天的休息状态。
+   */
+  const handleCheckIn = async (input: { rode: boolean; bikeId?: string; distanceKm?: number }) => {
+    const today = (() => {
+      const d = new Date()
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+    })()
+    const now = Date.now()
+    const existing = days.find((d) => d.date === today) ?? null
+
+    if (!input.rode) {
+      await removeDay(today) // 覆盖当天原有打卡,避免残留旧的骑行记录关联
+      await saveDay({ id: today, date: today, rode: false, createdAt: now })
+      if (existing?.rideId) await remove(existing.rideId)
+      return null
+    }
+
+    const record: RideRecord = {
+      id: `ride_checkin_${now}_${Math.random().toString(36).slice(2, 8)}`,
+      label: nextRideLabel(rides), // 打卡记录同样分配路线编号
+      bikeId: input.bikeId,
+      checkIn: true,
+      date: today,
+      durationMin: null,
+      distanceKm: input.distanceKm ?? null,
+      avgSpeed: null,
+      maxSpeed: null,
+      cityName: '',
+      cityCode: '',
+      location: null,
+      env: {
+        temperature: null,
+        windLevel: null,
+        humidity: null,
+        precipitation: null,
+        precipitationProbability: null,
+        aqi: null,
+        pm25: null,
+      },
+      envMeta: { weatherFetched: false, aqiFetched: false, manualEdited: false },
+      route: { elevationGain: null, avgGrade: null, surface: null, traffic: null },
+      track: [],
+      speedSeries: [],
+      scores: null, // 打卡记录不参与评分与趋势
+      comment: '',
+      suggestions: [],
+      notes: '',
+      createdAt: now,
+      updatedAt: now,
+    }
+    await save(record)
+    // 同一天重复打卡时,删掉上一次生成的记录,保持一天一条
+    if (existing?.rideId && existing.rideId !== record.id) await remove(existing.rideId)
+    await saveDay({
+      id: today,
+      date: today,
+      rode: true,
+      bikeId: input.bikeId,
+      distanceKm: input.distanceKm,
+      rideId: record.id,
+      createdAt: now,
+    })
+    setSelectedId(record.id)
+    return record.id
+  }
+
+  /** 撤销今日打卡(打卡生成的骑行记录一并删除) */
+  const handleClearToday = async () => {
+    const today = (() => {
+      const d = new Date()
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+    })()
+    const entry = days.find((d) => d.date === today)
+    if (!entry) return
+    if (entry.rideId) await remove(entry.rideId)
+    await removeDay(today)
+  }
+
+  /** 打卡后重新打卡一天,避免残留 */
+
   return (
     <div className="min-h-full">
       {/* 顶栏 */}
@@ -90,6 +176,19 @@ export default function App() {
       </header>
 
       <main className="mx-auto max-w-7xl space-y-5 px-4 py-6 md:px-6">
+        {/* 今日骑行打卡 */}
+        <RideCheckIn
+          bikes={bikes}
+          days={days}
+          rides={rides}
+          onCheckIn={handleCheckIn}
+          onClearToday={handleClearToday}
+          onEditRide={(r) => {
+            setEditing(r)
+            window.scrollTo({ top: 0, behavior: 'smooth' })
+          }}
+        />
+
         {/* 录入 + 当前评分 */}
         <div className="grid grid-cols-1 gap-5 xl:grid-cols-12">
           <section className="card xl:col-span-7">
